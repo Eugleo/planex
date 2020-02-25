@@ -8,26 +8,30 @@ import com.google.ortools.sat.LinearExpr;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Model {
     CpModel model = new CpModel();
     List<UniversityClass> classes;
+    List<IntVar> starts = new ArrayList<>();
+    List<IntVar> ends = new ArrayList<>();
 
-    // TODO Implement
-    LocalDate firstDate = LocalDate.now();
+    LocalDate firstDate;
 
-    Model(List<UniversityClass> classes, WeightConfigurator w) {
-        classes = classes;
+    // TODO Change exception to a better one
+    Model(List<UniversityClass> classes, LocalDate firstDate, WeightConfigurator w) throws Exception {
+        this.classes = classes;
+        this.firstDate = firstDate;
 
-        // TODO implement max day count (firstDate - lastExamDate)
-        int dayCount = 64;
-        List<IntVar> durations = new ArrayList<>();
+        LocalDate lastDate = getDates(classes).max(Comparator.naturalOrder()).orElseThrow(() -> new Exception());
+        int dayCount = Math.toIntExact(ChronoUnit.DAYS.between(firstDate, lastDate));
         List<IntervalVar> intervals = new ArrayList<>();
+        List<IntVar> durations = new ArrayList<>();
         List<Integer> lossesCoefs = new ArrayList<>();
         List<IntVar> lossesVars = new ArrayList<>();
-
         IntVar zero = model.newConstant(0);
 
         for (UniversityClass uniClass: classes) {
@@ -41,6 +45,11 @@ public class Model {
             IntVar duration = model.newIntVar(0, dayCount, uniClass.name + "duration");
             IntVar end = model.newIntVar(0, dayCount, uniClass.name + "end");
             IntervalVar interval = model.newIntervalVar(start, duration, end, uniClass.name + "interval");
+
+            starts.add(start);
+            ends.add(end);
+            durations.add(duration);
+            intervals.add(interval);
 
             try {
                 model.addAllowedAssignments(new IntVar[] {start}, startDays);
@@ -59,8 +68,6 @@ public class Model {
             IntVar prepTimeDiffPos = model.newIntVar(0, uniClass.idealPrepTime, uniClass.name + "prepDiffPos");
             model.addMaxEquality(prepTimeDiffPos, new IntVar[] {prepTimeDiff, zero});
 
-            durations.add(duration);
-            intervals.add(interval);
             lossesCoefs.add(uniClass.getImportance(w));
             lossesVars.add(prepTimeDiffPos);
         }
@@ -74,27 +81,38 @@ public class Model {
         );
     }
 
-    // TODO Implement
-    private int[][] getStartDays(List<UniversityClass> classes, LocalDate firstDay) {
-        classes.stream()
-                .flatMap(c -> c.exams.stream().map(e -> e.date))
-                .map(d -> d.plusDays(1))
-                .collect(Collectors.toList());
-
+    private Stream<LocalDate> getDates(List<UniversityClass> classes) {
+        return classes.stream().flatMap(c -> c.exams.stream().map(e -> e.date));
     }
 
-    private int[][] getEndDays(UniversityClass uniClass, LocalDate firstDay) {
+    // TODO Isn't there a better way to get int[][] from List<Integer>?
+    private int[][] toArray(List<Integer> list) {
         // TODO Are the dimensions right
-        int[][] result = new int[1][uniClass.exams.size()];
-        List<Integer> resultList = uniClass.exams.stream()
-                .map(e -> e.date)
-                .map(d -> ChronoUnit.DAYS.between(d, firstDay))
-                .map(n -> Math.toIntExact(n))
-                .collect(Collectors.toList());
-
-        for (int i = 0; i < resultList.size(); i++) {
-            result[0][i] = resultList.get(i);
+        int[][] result = new int[1][list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            result[0][i] = list.get(i);
         }
         return result;
+    }
+
+    // Return a list of days which are after some exam
+    private int[][] getStartDays(List<UniversityClass> classes, LocalDate firstDay) {
+        List<Integer> resultList = getDates(classes)
+                .map(d -> d.plusDays(1))
+                .map(d -> ChronoUnit.DAYS.between(firstDay, d))
+                .map(n -> Math.toIntExact(n))
+                .collect(Collectors.toList());
+        return toArray(resultList);
+    }
+
+    // Return a list of days which are just before an exam
+    private int[][] getEndDays(UniversityClass uniClass, LocalDate firstDay) {
+        List<Integer> resultList = uniClass.exams.stream()
+                .map(e -> e.date)
+                .map(d -> d.minusDays(1))
+                .map(d -> ChronoUnit.DAYS.between(firstDay, d))
+                .map(n -> Math.toIntExact(n))
+                .collect(Collectors.toList());
+        return toArray(resultList);
     }
 }
