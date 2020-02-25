@@ -18,6 +18,7 @@ public class Model {
     List<UniversityClass> classes;
     List<IntVar> starts = new ArrayList<>();
     List<IntVar> ends = new ArrayList<>();
+    List<IntVar> durations = new ArrayList<>();
 
     LocalDate firstDate;
 
@@ -29,16 +30,11 @@ public class Model {
         LocalDate lastDate = getDates(classes).max(Comparator.naturalOrder()).orElseThrow(() -> new Exception());
         int dayCount = Math.toIntExact(ChronoUnit.DAYS.between(firstDate, lastDate));
         List<IntervalVar> intervals = new ArrayList<>();
-        List<IntVar> durations = new ArrayList<>();
         List<Integer> lossesCoefs = new ArrayList<>();
         List<IntVar> lossesVars = new ArrayList<>();
         IntVar zero = model.newConstant(0);
 
         for (UniversityClass uniClass: classes) {
-            List<UniversityClass> otherClasses = classes.stream()
-                    .filter(c -> !c.equals(uniClass))
-                    .collect(Collectors.toList());
-            int[][] startDays = getStartDays(otherClasses, firstDate);
             int[][] endDays = getEndDays(uniClass, firstDate);
 
             IntVar start = model.newIntVar(0, dayCount, uniClass.name + "start");
@@ -52,7 +48,6 @@ public class Model {
             intervals.add(interval);
 
             try {
-                model.addAllowedAssignments(new IntVar[] {start}, startDays);
                 model.addAllowedAssignments(new IntVar[] {end}, endDays);
             } catch (CpModel.WrongLength wrongLength) {
                 System.out.println("Incorrect tuple length");
@@ -88,28 +83,17 @@ public class Model {
     // TODO Isn't there a better way to get int[][] from List<Integer>?
     private int[][] toArray(List<Integer> list) {
         // TODO Are the dimensions right
-        int[][] result = new int[1][list.size()];
+        int[][] result = new int[list.size()][1];
         for (int i = 0; i < list.size(); i++) {
-            result[0][i] = list.get(i);
+            result[i][0] = list.get(i);
         }
         return result;
-    }
-
-    // Return a list of days which are after some exam
-    private int[][] getStartDays(List<UniversityClass> classes, LocalDate firstDay) {
-        List<Integer> resultList = getDates(classes)
-                .map(d -> d.plusDays(1))
-                .map(d -> ChronoUnit.DAYS.between(firstDay, d))
-                .map(n -> Math.toIntExact(n))
-                .collect(Collectors.toList());
-        return toArray(resultList);
     }
 
     // Return a list of days which are just before an exam
     private int[][] getEndDays(UniversityClass uniClass, LocalDate firstDay) {
         List<Integer> resultList = uniClass.exams.stream()
                 .map(e -> e.date)
-                .map(d -> d.minusDays(1))
                 .map(d -> ChronoUnit.DAYS.between(firstDay, d))
                 .map(n -> Math.toIntExact(n))
                 .collect(Collectors.toList());

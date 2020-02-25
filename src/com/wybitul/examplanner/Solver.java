@@ -19,10 +19,10 @@ public class Solver {
 
     public List<Result> solve() {
         CpSolverStatus status = solver.solve(model.model);
-        if (status == CpSolverStatus.OPTIMAL) {
+        if (true) {
             List<LocalDate> examDates = model.ends.stream()
                     .map(v -> solver.value(v))
-                    .map(i -> firstDate.plusDays(i + 1))
+                    .map(i -> firstDate.plusDays(i))
                     .collect(Collectors.toList());
 
             List<Exam> exams = new ArrayList<>();

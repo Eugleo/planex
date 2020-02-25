@@ -9,4 +9,9 @@ enum ExamType {
 public class Exam {
     LocalDate date;
     ExamType type;
+
+    public Exam(LocalDate date, ExamType type) {
+        this.date = date;
+        this.type = type;
+    }
 }
