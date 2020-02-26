@@ -1,4 +1,4 @@
 /out/
 .idea
 exam.txt
-export.xlsx
+*.xlsx
