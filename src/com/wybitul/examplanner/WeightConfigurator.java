@@ -4,14 +4,9 @@ import java.util.function.Function;
 
 public class WeightConfigurator {
     Function<ClassType, Integer> typeToInt;
-    int type;
-    int weight;
-    int credits;
+    int type = 1;
+    int weight = 1;
+    int credits = 1;
 
-    public WeightConfigurator(Function<ClassType, Integer> typeToInt, int type, int weight, int credits) {
-        this.typeToInt = typeToInt;
-        this.type = type;
-        this.weight = weight;
-        this.credits = credits;
-    }
+    public WeightConfigurator() { }
 }

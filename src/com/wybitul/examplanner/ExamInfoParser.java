@@ -10,13 +10,13 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InfoParser {
+public class ExamInfoParser {
     static boolean debug = false;
 
-    private InfoParser() { }
+    private ExamInfoParser() { }
 
-    public static Map<String, Info> parse(String path) {
-        Map<String, Info> result = new HashMap<>();
+    public static Map<String, ExamInfo> parse(String path) {
+        Map<String, ExamInfo> result = new HashMap<>();
         try {
             Workbook workbook = WorkbookFactory.create(new File(path));
             Sheet sheet = workbook.getSheetAt(0);
@@ -52,9 +52,9 @@ public class InfoParser {
                 LocalDate date = LocalDate.of(year, month, day);
                 Exam exam = new Exam(date, examType);
 
-                Info info = result.getOrDefault(id, new Info(name));
-                info.exams.add(exam);
-                result.putIfAbsent(id, info);
+                ExamInfo examInfo = result.getOrDefault(id, new ExamInfo(name));
+                examInfo.exams.add(exam);
+                result.putIfAbsent(id, examInfo);
             }
         } catch (InvalidFormatException e) {
             System.out.println("The file should be in .xls or .xlsx format");

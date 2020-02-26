@@ -18,16 +18,16 @@ public class UniversityClass {
     LocalDate lowBound;
     LocalDate highBound;
 
-    public UniversityClass(String id, Info info, Config config) {
+    public UniversityClass(String id, ExamInfo examInfo, ClassParams classParams) {
         this.id = id;
-        this.name = info.name;
-        this.type = config.type;
-        this.idealPrepTime = config.idealPrepTime;
-        this.weight = config.weight;
-        this.credits = config.credits;
-        this.exams = info.exams;
-        this.lowBound = config.lowBound;
-        this.highBound = config.highBound;
+        this.name = examInfo.name;
+        this.type = classParams.type;
+        this.idealPrepTime = classParams.idealPrepTime;
+        this.weight = classParams.weight;
+        this.credits = classParams.credits;
+        this.exams = examInfo.exams;
+        this.lowBound = classParams.lowBound;
+        this.highBound = classParams.highBound;
     }
 
     public int getImportance(WeightConfigurator w) {
