@@ -46,6 +46,8 @@ public class ExamInfoParser {
                 String name = nameMatcher.group(1);
                 String id = nameMatcher.group(2);
                 ExamType examType = rawType.equals("zkouška") ? ExamType.Exam : ExamType.Colloquium;
+                if (examType == ExamType.Colloquium) { id += "zp"; }
+                if (examType == ExamType.Colloquium) { name += " (zápočet)"; }
                 int year = Integer.parseInt(dateMatcher.group(3));
                 int month = Integer.parseInt(dateMatcher.group(2));
                 int day = Integer.parseInt(dateMatcher.group(1));
@@ -60,8 +62,7 @@ public class ExamInfoParser {
             System.out.println("The file should be in .xls or .xlsx format");
         } catch (IOException e) {
             System.out.printf("Can't open the file %s\n", path);
-        } finally {
-            return result;
         }
+        return result;
     }
 }

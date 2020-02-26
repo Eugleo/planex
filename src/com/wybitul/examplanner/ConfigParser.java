@@ -36,7 +36,9 @@ public class ConfigParser {
                 String line = sc.nextLine();
                 lineNumber++;
                 if (line.startsWith("==")) {
-                    configBuilder.addClassParams(currentClass, classParamsBuilder.build());
+                    ClassParams cp = classParamsBuilder.build();
+                    // Add "...zp" to ids of colloquia
+                    configBuilder.addClassParams(cp.isColloquium ? currentClass + "zp" : currentClass, cp);
                     currentClass = parseCurrentClass(line);
                     classParamsBuilder = new ClassParams.Builder(new ClassParams(defaultClassParams));
                 } else if (line.startsWith("-")) {
@@ -44,7 +46,8 @@ public class ConfigParser {
                 }
             }
             // Add the last class
-            configBuilder.addClassParams(currentClass, classParamsBuilder.build());
+            ClassParams cp = classParamsBuilder.build();
+            configBuilder.addClassParams(cp.isColloquium ? currentClass + "zp" : currentClass, cp);
         } catch (MissingFieldException e) {
             System.out.printf("%s near line %d\n", e.getMessage(), lineNumber);
         } catch (IncorrectConfigFileException e) {

@@ -2,6 +2,8 @@ package com.wybitul.examplanner;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 enum ClassType {
     P, PVP, V
@@ -26,7 +28,8 @@ public class UniversityClass {
         this.idealPrepTime = cp.idealPrepTime;
         this.weight = cp.weight;
         this.credits = cp.credits;
-        this.exams = examInfo.exams;
+        Predicate<Exam> pred = cp.isColloquium ? e -> e.type == ExamType.Colloquium : e -> e.type == ExamType.Exam;
+        this.exams = examInfo.exams.stream().filter(pred).collect(Collectors.toList());
         this.lowBound = cp.lowBound;
         this.highBound = cp.highBound;
         this.minPrepTime = cp.minPrepTime;

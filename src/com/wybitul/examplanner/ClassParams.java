@@ -13,6 +13,7 @@ public class ClassParams implements HasValidation {
     boolean ignore = false;
     LocalDate lowBound;
     LocalDate highBound;
+    boolean isColloquium = false;
 
     public ClassParams() {
         type = ClassType.V;
@@ -38,6 +39,7 @@ public class ClassParams implements HasValidation {
         highBound = clone.highBound == null ? null : LocalDate.from(clone.highBound);
         minPrepTime = clone.minPrepTime;
         ignore = clone.ignore;
+        isColloquium = clone.isColloquium;
     }
 
     @Override
@@ -103,11 +105,9 @@ public class ClassParams implements HasValidation {
                 }
             });
 
-            addOption("ignorovat", (value, cp) -> {
-                if (value.equals("true") || value.equals("ano")) {
-                    cp.ignore = true;
-                }
-            });
+            addFlag("ignorovat", cp -> cp.ignore = true);
+
+            addFlag("zápočet", cp -> cp.isColloquium = true);
 
             addOption("minimum", (value, cp) -> {
                 Pattern p = Pattern.compile("^(\\d+)");
