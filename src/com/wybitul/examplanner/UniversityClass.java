@@ -1,7 +1,7 @@
 package com.wybitul.examplanner;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.function.Function;
 
 enum ClassType {
     P, PVP, V
@@ -15,15 +15,19 @@ public class UniversityClass {
     int weight;
     int credits;
     List<Exam> exams;
+    LocalDate lowBound;
+    LocalDate highBound;
 
-    public UniversityClass(String id, ClassConfig c, List<Exam> exams) {
-        this.name = c.name;
+    public UniversityClass(String id, Info info, Config config) {
         this.id = id;
-        this.type = c.type;
-        this.idealPrepTime = c.idealPrepTime;
-        this.weight = c.weight;
-        this.credits = c.credits;
-        this.exams = exams;
+        this.name = info.name;
+        this.type = config.type;
+        this.idealPrepTime = config.idealPrepTime;
+        this.weight = config.weight;
+        this.credits = config.credits;
+        this.exams = info.exams;
+        this.lowBound = config.lowBound;
+        this.highBound = config.highBound;
     }
 
     public int getImportance(WeightConfigurator w) {

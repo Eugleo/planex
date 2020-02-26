@@ -42,6 +42,16 @@ public class Model {
             IntVar end = model.newIntVar(0, dayCount, uniClass.name + "end");
             IntervalVar interval = model.newIntervalVar(start, duration, end, uniClass.name + "interval");
 
+            if (uniClass.lowBound != null) {
+                long day = ChronoUnit.DAYS.between(firstDate, uniClass.lowBound);
+                model.addGreaterOrEqual(end, day);
+            }
+
+            if (uniClass.highBound != null) {
+                long day = ChronoUnit.DAYS.between(firstDate, uniClass.highBound);
+                model.addLessOrEqual(end, day);
+            }
+
             starts.add(start);
             ends.add(end);
             durations.add(duration);
