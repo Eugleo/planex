@@ -7,7 +7,7 @@ public class Main {
         System.loadLibrary("jniortools");
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         try {
             Config config = ConfigParser.parse(args[0]);
             Map<String, ExamInfo> info = ExamInfoParser.parse(config.excelFilePath);
@@ -26,6 +26,8 @@ public class Main {
         } catch (MissingFieldException e) {
             System.out.println(e.getMessage());
             System.exit(1);
+        } catch (Exception e) {
+            System.exit(1);
         }
     }
 
@@ -39,7 +41,7 @@ public class Main {
         results.stream()
                 .sorted(Comparator.comparing(r -> r.exam.date))
                 .forEach(r -> {
-                    String fmt = String.format("%d (%d)", r.prepTime, r.uniClass.idealPrepTime);
+                    String fmt = String.format("%d (%d)", r.prepTime, r.uniClass.params.idealPrepTime);
                     System.out.printf(formatString2, r.uniClass.name, r.exam.date, fmt);
                 });
     }

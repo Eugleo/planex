@@ -14,12 +14,13 @@ public class ClassParams implements HasValidation {
     LocalDate lowBound;
     LocalDate highBound;
     boolean isColloquium = false;
+    int backups = 0;
 
     public ClassParams() {
         type = ClassType.V;
     }
 
-    // Cloning constructor
+    // Copy constructor
     public ClassParams(ClassParams clone) {
         switch (clone.type) {
             case V:
@@ -40,6 +41,7 @@ public class ClassParams implements HasValidation {
         minPrepTime = clone.minPrepTime;
         ignore = clone.ignore;
         isColloquium = clone.isColloquium;
+        backups = clone.backups;
     }
 
     @Override
@@ -68,7 +70,6 @@ public class ClassParams implements HasValidation {
                 Matcher m = p.matcher(value);
                 m.find();
                 if (!m.group(1).matches("^.$")) {
-                    String days = m.group(2);
                     int day = Integer.parseInt(m.group(2));
                     int month = Integer.parseInt(m.group(3));
                     int year = Integer.parseInt(m.group(4));
@@ -115,6 +116,8 @@ public class ClassParams implements HasValidation {
                 m.find();
                 cp.minPrepTime = Integer.parseInt(m.group(1));
             });
+
+            addOption("termíny", (value, cp) -> cp.backups = Integer.parseInt(value));
         }
     }
 }

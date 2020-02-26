@@ -37,6 +37,7 @@ public class Model {
 
         for (UniversityClass uniClass: classes) {
             int[][] endDays = getEndDays(uniClass, firstDate);
+            ClassParams p = uniClass.params;
 
             // I take duration as the size of interval (left, right], so I have to shift the initial date
             IntVar start = model.newIntVar(-1, dayCount, uniClass.name + "start");
@@ -49,16 +50,16 @@ public class Model {
             model.addEquality(prepTime, LinearExpr.scalProd(new IntVar[] {duration, one}, new int[] {1, -1}));
 
             // prepTime >= minPrepTime
-            IntVar minPrepTime = model.newConstant(uniClass.minPrepTime);
+            IntVar minPrepTime = model.newConstant(p.minPrepTime);
             model.addGreaterOrEqual(prepTime, minPrepTime);
 
-            if (uniClass.lowBound != null) {
-                long day = ChronoUnit.DAYS.between(firstDate, uniClass.lowBound);
+            if (p.lowBound != null) {
+                long day = ChronoUnit.DAYS.between(firstDate, p.lowBound);
                 model.addGreaterOrEqual(end, day);
             }
 
-            if (uniClass.highBound != null) {
-                long day = ChronoUnit.DAYS.between(firstDate, uniClass.highBound);
+            if (p.highBound != null) {
+                long day = ChronoUnit.DAYS.between(firstDate, p.highBound);
                 model.addLessOrEqual(end, day);
             }
 
@@ -67,20 +68,24 @@ public class Model {
             prepTimes.add(prepTime);
             intervals.add(interval);
 
+            // Backups is the number of backup exam dates if the exam needs to be done again
+            IntVar backups = model.newIntVar(0, uniClass.exams.size(), uniClass.name + "backups");
+            model.addGreaterOrEqual(backups, p.backups);
+
             try {
-                model.addAllowedAssignments(new IntVar[] {end}, endDays);
+                model.addAllowedAssignments(new IntVar[] {end, backups}, endDays);
             } catch (CpModel.WrongLength wrongLength) {
                 System.out.println("Incorrect tuple length");
             }
 
             // prepTimeDiff = idealPrepTime - prepTime
-            IntVar idealPrepTime = model.newConstant(uniClass.idealPrepTime);
-            IntVar prepTimeDiff = model.newIntVar(-dayCount, uniClass.idealPrepTime, uniClass.name + "prepDiff");
+            IntVar idealPrepTime = model.newConstant(p.idealPrepTime);
+            IntVar prepTimeDiff = model.newIntVar(-dayCount, p.idealPrepTime, uniClass.name + "prepDiff");
             LinearExpr expr = LinearExpr.scalProd(new IntVar[] {idealPrepTime, prepTime}, new int[] {1, -1});
             model.addEquality(expr, prepTimeDiff);
 
             // prepTimeDiffPos = max(0, prepTimeDiff)
-            IntVar prepTimeDiffPos = model.newIntVar(0, uniClass.idealPrepTime, uniClass.name + "prepDiffPos");
+            IntVar prepTimeDiffPos = model.newIntVar(0, p.idealPrepTime, uniClass.name + "prepDiffPos");
             model.addMaxEquality(prepTimeDiffPos, new IntVar[] {prepTimeDiff, zero});
 
             lossesCoefs.add(uniClass.getImportance(w));
@@ -102,9 +107,10 @@ public class Model {
 
     // ADAM Existuje lepší způsob jak převést List<Integer> na int[][]?
     private int[][] toArray(List<Integer> list) {
-        int[][] result = new int[list.size()][1];
+        int[][] result = new int[list.size()][2];
         for (int i = 0; i < list.size(); i++) {
             result[i][0] = list.get(i);
+            result[i][1] = list.size() - 1 - i;
         }
         return result;
     }

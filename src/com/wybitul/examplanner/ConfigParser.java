@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class ConfigParser {
     private ConfigParser() { }
 
-    public static Config parse(String path) throws MissingFieldException {
+    public static Config parse(String path) throws MissingFieldException, IncorrectConfigFileException, FileNotFoundException {
         Config.Builder configBuilder = new Config.Builder();
         int lineNumber = 0;
         try {
@@ -50,21 +50,23 @@ public class ConfigParser {
             configBuilder.addClassParams(cp.isColloquium ? currentClass + "zp" : currentClass, cp);
         } catch (MissingFieldException e) {
             System.out.printf("%s near line %d\n", e.getMessage(), lineNumber);
+            throw e;
         } catch (IncorrectConfigFileException e) {
             System.out.printf("Error in configuration file on line %d\n", lineNumber);
+            throw e;
         } catch (FileNotFoundException e) {
             System.out.printf("Can't find the file %s\n", path);
+            throw e;
         }
         return configBuilder.build();
     }
 
     private static String parseCurrentClass(String line) throws IncorrectConfigFileException {
-        try {
-            Pattern p = Pattern.compile("^==\\s+.*\\s+\\((.*)\\)\\s*$");
-            Matcher m = p.matcher(line);
-            m.find();
+        Pattern p = Pattern.compile("^==\\s+.*\\s+\\((.*)\\)\\s*$");
+        Matcher m = p.matcher(line);
+        if (m.find()) {
             return m.group(1);
-        } catch (Exception e) {
+        } else {
             throw new IncorrectConfigFileException();
         }
     }
