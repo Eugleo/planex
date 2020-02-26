@@ -24,8 +24,6 @@ public class ConfigParser {
                 } else if (line.startsWith("+++")) {
                     // End of header
                     break;
-                } else {
-                    continue;
                 }
             }
 
@@ -43,8 +41,6 @@ public class ConfigParser {
                     classParamsBuilder = new ClassParams.Builder(new ClassParams(defaultClassParams));
                 } else if (line.startsWith("-")) {
                     classParamsBuilder.parse(line);
-                } else {
-                    continue;
                 }
             }
             // Add the last class
@@ -55,23 +51,14 @@ public class ConfigParser {
             System.out.printf("Error in configuration file on line %d\n", lineNumber);
         } catch (FileNotFoundException e) {
             System.out.printf("Can't find the file %s\n", path);
-        } catch (Exception e) {
-            /*
-            ADAM
-            Myslel jsem, že když tento catch vynechám, jakýkoli nematchnutý Exception (i.e. cokoli, co není
-            MissingFieldException, IncorrectConfigFileException, FileNotFoundException) se vyhodí, ale není to tak?
-            */
-            throw e;
-        } finally {
-            return configBuilder.build();
         }
+        return configBuilder.build();
     }
 
     private static String parseCurrentClass(String line) throws IncorrectConfigFileException {
         try {
             Pattern p = Pattern.compile("^==\\s+.*\\s+\\((.*)\\)\\s*$");
             Matcher m = p.matcher(line);
-            m.find();
             return m.group(1);
         } catch (Exception e) {
             throw new IncorrectConfigFileException();
