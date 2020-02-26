@@ -12,22 +12,24 @@ public class UniversityClass {
     String id;
     ClassType type;
     int idealPrepTime;
+    int minPrepTime;
     int weight;
     int credits;
     List<Exam> exams;
     LocalDate lowBound;
     LocalDate highBound;
 
-    public UniversityClass(String id, ExamInfo examInfo, ClassParams classParams) {
+    public UniversityClass(String id, ExamInfo examInfo, ClassParams cp) {
         this.id = id;
         this.name = examInfo.name;
-        this.type = classParams.type;
-        this.idealPrepTime = classParams.idealPrepTime;
-        this.weight = classParams.weight;
-        this.credits = classParams.credits;
+        this.type = cp.type;
+        this.idealPrepTime = cp.idealPrepTime;
+        this.weight = cp.weight;
+        this.credits = cp.credits;
         this.exams = examInfo.exams;
-        this.lowBound = classParams.lowBound;
-        this.highBound = classParams.highBound;
+        this.lowBound = cp.lowBound;
+        this.highBound = cp.highBound;
+        this.minPrepTime = cp.minPrepTime;
     }
 
     public int getImportance(WeightConfigurator w) {

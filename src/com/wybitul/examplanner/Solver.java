@@ -19,7 +19,8 @@ public class Solver {
 
     public List<Result> solve() {
         CpSolverStatus status = solver.solve(model.model);
-        //System.out.println(status);
+        System.out.printf("Solution: %s\n\n", status);
+
         List<LocalDate> examDates = model.ends.stream()
                 .map(v -> solver.value(v))
                 .map(i -> firstDate.plusDays(i))
@@ -37,7 +38,7 @@ public class Solver {
 
         List<Result> result = new ArrayList<>();
         for (int i = 0; i < exams.size(); i++) {
-            Result r = new Result(model.classes.get(i), exams.get(i), solver.value(model.durations.get(i)) - 1);
+            Result r = new Result(model.classes.get(i), exams.get(i), solver.value(model.prepTimes.get(i)));
             result.add(r);
         }
 

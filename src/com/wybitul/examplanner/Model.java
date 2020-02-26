@@ -18,7 +18,7 @@ public class Model {
     List<UniversityClass> classes;
     List<IntVar> starts = new ArrayList<>();
     List<IntVar> ends = new ArrayList<>();
-    List<IntVar> durations = new ArrayList<>();
+    List<IntVar> prepTimes = new ArrayList<>();
 
     LocalDate firstDate;
 
@@ -27,7 +27,7 @@ public class Model {
         this.classes = classes;
         this.firstDate = fd;
 
-        LocalDate lastDate = getDates(classes).max(Comparator.naturalOrder()).orElseThrow(() -> new Exception());
+        LocalDate lastDate = getDates(classes).max(Comparator.naturalOrder()).orElseThrow(Exception::new);
         int dayCount = Math.toIntExact(ChronoUnit.DAYS.between(firstDate, lastDate)) + 1;
         List<IntervalVar> intervals = new ArrayList<>();
         List<Integer> lossesCoefs = new ArrayList<>();
@@ -44,6 +44,14 @@ public class Model {
             IntVar end = model.newIntVar(0, dayCount, uniClass.name + "end");
             IntervalVar interval = model.newIntervalVar(start, duration, end, uniClass.name + "interval");
 
+            // prepTime = duration - 1
+            IntVar prepTime = model.newIntVar(0, dayCount, uniClass.name + "prepTime");
+            model.addEquality(prepTime, LinearExpr.scalProd(new IntVar[] {duration, one}, new int[] {1, -1}));
+
+            // prepTime >= minPrepTime
+            IntVar minPrepTime = model.newConstant(uniClass.minPrepTime);
+            model.addGreaterOrEqual(prepTime, minPrepTime);
+
             if (uniClass.lowBound != null) {
                 long day = ChronoUnit.DAYS.between(firstDate, uniClass.lowBound);
                 model.addGreaterOrEqual(end, day);
@@ -56,7 +64,7 @@ public class Model {
 
             starts.add(start);
             ends.add(end);
-            durations.add(duration);
+            prepTimes.add(prepTime);
             intervals.add(interval);
 
             try {
@@ -65,10 +73,10 @@ public class Model {
                 System.out.println("Incorrect tuple length");
             }
 
-            // prepTimeDiff = idealPrepTime - duration + 1
+            // prepTimeDiff = idealPrepTime - prepTime
             IntVar idealPrepTime = model.newConstant(uniClass.idealPrepTime);
             IntVar prepTimeDiff = model.newIntVar(-dayCount, uniClass.idealPrepTime, uniClass.name + "prepDiff");
-            LinearExpr expr = LinearExpr.scalProd(new IntVar[] {idealPrepTime, duration, one}, new int[] {1, -1, 1});
+            LinearExpr expr = LinearExpr.scalProd(new IntVar[] {idealPrepTime, prepTime}, new int[] {1, -1});
             model.addEquality(expr, prepTimeDiff);
 
             // prepTimeDiffPos = max(0, prepTimeDiff)
@@ -106,7 +114,7 @@ public class Model {
         List<Integer> resultList = uniClass.exams.stream()
                 .map(e -> e.date)
                 .map(d -> ChronoUnit.DAYS.between(firstDay, d))
-                .map(n -> Math.toIntExact(n))
+                .map(Math::toIntExact)
                 .collect(Collectors.toList());
         return toArray(resultList);
     }

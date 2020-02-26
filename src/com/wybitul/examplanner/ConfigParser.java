@@ -59,6 +59,7 @@ public class ConfigParser {
         try {
             Pattern p = Pattern.compile("^==\\s+.*\\s+\\((.*)\\)\\s*$");
             Matcher m = p.matcher(line);
+            m.find();
             return m.group(1);
         } catch (Exception e) {
             throw new IncorrectConfigFileException();

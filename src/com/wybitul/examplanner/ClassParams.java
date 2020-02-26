@@ -5,14 +5,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ClassParams implements HasValidation {
-    ClassType type = ClassType.V;
+    ClassType type;
     int idealPrepTime = 0;
+    int minPrepTime = 0;
     int weight = 0;
     int credits = 0;
+    boolean ignore = false;
     LocalDate lowBound;
     LocalDate highBound;
 
-    public ClassParams() { }
+    public ClassParams() {
+        type = ClassType.V;
+    }
 
     // Cloning constructor
     public ClassParams(ClassParams clone) {
@@ -32,6 +36,8 @@ public class ClassParams implements HasValidation {
         credits = clone.credits;
         lowBound = clone.lowBound == null ? null : LocalDate.from(clone.lowBound);
         highBound = clone.highBound == null ? null : LocalDate.from(clone.highBound);
+        minPrepTime = clone.minPrepTime;
+        ignore = clone.ignore;
     }
 
     @Override
@@ -95,6 +101,19 @@ public class ClassParams implements HasValidation {
                         cp.type = ClassType.V;
                         break;
                 }
+            });
+
+            addOption("ignorovat", (value, cp) -> {
+                if (value.equals("true") || value.equals("ano")) {
+                    cp.ignore = true;
+                }
+            });
+
+            addOption("minimum", (value, cp) -> {
+                Pattern p = Pattern.compile("^(\\d+)");
+                Matcher m = p.matcher(value);
+                m.find();
+                cp.minPrepTime = Integer.parseInt(m.group(1));
             });
         }
     }

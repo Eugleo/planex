@@ -14,7 +14,9 @@ public class Main {
             List<UniversityClass> classes = new ArrayList<>();
             info.forEach((key, in) -> {
                 ClassParams cp = config.classParams.getOrDefault(key, config.classParams.get("default"));
-                classes.add(new UniversityClass(key, in, cp));
+                if (!cp.ignore) {
+                    classes.add(new UniversityClass(key, in, cp));
+                }
             });
 
             Model model = new Model(classes, config.firstDate, config.weightConfigurator);
@@ -28,7 +30,7 @@ public class Main {
     }
 
     private static void printResults(List<Result> results) {
-        int fst = results.stream().map(r -> r.uniClass.name.length()).max(Comparator.naturalOrder()).get();
+        int fst = results.stream().map(r -> r.uniClass.name.length()).max(Comparator.naturalOrder()).orElseGet("předmět"::length);
         int snd = "2020-01-10".length();
         int thd = "příprava".length();
         String formatString1 = "%-" + fst + "S %" + snd + "S %" + thd + "S\n";
