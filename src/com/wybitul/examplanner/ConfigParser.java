@@ -47,6 +47,8 @@ public class ConfigParser {
                     continue;
                 }
             }
+            // Add the last class
+            configBuilder.addClassParams(currentClass, classParamsBuilder.build());
         } catch (MissingFieldException e) {
             System.out.printf("%s near line %d\n", e.getMessage(), lineNumber);
         } catch (IncorrectConfigFileException e) {

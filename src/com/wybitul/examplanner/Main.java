@@ -20,12 +20,25 @@ public class Main {
             Model model = new Model(classes, config.firstDate, config.weightConfigurator);
             Solver solver = new Solver(model, config.firstDate);
             List<Result> results = solver.solve();
-            results.stream()
-                    .sorted(Comparator.comparing(r -> r.exam.date))
-                    .forEach(r -> System.out.printf("%s: %s\n", r.uniClass.name, r.exam.date));
+            printResults(results);
         } catch (MissingFieldException e) {
             System.out.println(e.getMessage());
             System.exit(1);
         }
+    }
+
+    private static void printResults(List<Result> results) {
+        int fst = results.stream().map(r -> r.uniClass.name.length()).max(Comparator.naturalOrder()).get();
+        int snd = "2020-01-10".length();
+        int thd = "příprava".length();
+        String formatString1 = "%-" + fst + "S %" + snd + "S %" + thd + "S\n";
+        System.out.printf(formatString1, "předmět", "zkouška", "příprava");
+        String formatString2 = "%-" + fst + "s %" + snd + "s %" + thd + "s\n";
+        results.stream()
+                .sorted(Comparator.comparing(r -> r.exam.date))
+                .forEach(r -> {
+                    String fmt = String.format("%d (%d)", r.prepTime, r.uniClass.idealPrepTime);
+                    System.out.printf(formatString2, r.uniClass.name, r.exam.date, fmt);
+                });
     }
 }

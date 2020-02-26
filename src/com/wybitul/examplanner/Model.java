@@ -23,21 +23,23 @@ public class Model {
     LocalDate firstDate;
 
     // TODO Change exception to a better one
-    Model(List<UniversityClass> classes, LocalDate firstDate, WeightConfigurator w) throws Exception {
+    Model(List<UniversityClass> classes, LocalDate fd, WeightConfigurator w) throws Exception {
         this.classes = classes;
-        this.firstDate = firstDate;
+        this.firstDate = fd;
 
         LocalDate lastDate = getDates(classes).max(Comparator.naturalOrder()).orElseThrow(() -> new Exception());
-        int dayCount = Math.toIntExact(ChronoUnit.DAYS.between(firstDate, lastDate));
+        int dayCount = Math.toIntExact(ChronoUnit.DAYS.between(firstDate, lastDate)) + 1;
         List<IntervalVar> intervals = new ArrayList<>();
         List<Integer> lossesCoefs = new ArrayList<>();
         List<IntVar> lossesVars = new ArrayList<>();
         IntVar zero = model.newConstant(0);
+        IntVar one = model.newConstant(1);
 
         for (UniversityClass uniClass: classes) {
             int[][] endDays = getEndDays(uniClass, firstDate);
 
-            IntVar start = model.newIntVar(0, dayCount, uniClass.name + "start");
+            // I take duration as the size of interval (left, right], so I have to shift the initial date
+            IntVar start = model.newIntVar(-1, dayCount, uniClass.name + "start");
             IntVar duration = model.newIntVar(0, dayCount, uniClass.name + "duration");
             IntVar end = model.newIntVar(0, dayCount, uniClass.name + "end");
             IntervalVar interval = model.newIntervalVar(start, duration, end, uniClass.name + "interval");
@@ -63,10 +65,10 @@ public class Model {
                 System.out.println("Incorrect tuple length");
             }
 
-            // prepTimeDiff = idealPrepTime - duration
+            // prepTimeDiff = idealPrepTime - duration + 1
             IntVar idealPrepTime = model.newConstant(uniClass.idealPrepTime);
             IntVar prepTimeDiff = model.newIntVar(-dayCount, uniClass.idealPrepTime, uniClass.name + "prepDiff");
-            LinearExpr expr = LinearExpr.scalProd(new IntVar[] {idealPrepTime, duration}, new int[] {1, -1});
+            LinearExpr expr = LinearExpr.scalProd(new IntVar[] {idealPrepTime, duration, one}, new int[] {1, -1, 1});
             model.addEquality(expr, prepTimeDiff);
 
             // prepTimeDiffPos = max(0, prepTimeDiff)
@@ -90,9 +92,8 @@ public class Model {
         return classes.stream().flatMap(c -> c.exams.stream().map(e -> e.date));
     }
 
-    // TODO Isn't there a better way to get int[][] from List<Integer>?
+    // ADAM Existuje lepší způsob jak převést List<Integer> na int[][]?
     private int[][] toArray(List<Integer> list) {
-        // TODO Are the dimensions right
         int[][] result = new int[list.size()][1];
         for (int i = 0; i < list.size(); i++) {
             result[i][0] = list.get(i);
