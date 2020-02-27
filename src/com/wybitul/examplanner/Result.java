@@ -1,13 +1,20 @@
 package com.wybitul.examplanner;
 
-public class Result {
-    UniversityClass uniClass;
-    Exam exam;
-    long prepTime;
+import java.time.LocalDate;
 
-    public Result(UniversityClass uniClass, Exam exam, long prepTime) {
-        this.uniClass = uniClass;
-        this.exam = exam;
+public class Result {
+    ClassOptions classOptions;
+    LocalDate examDate;
+    LocalDate start;
+
+    int backupTries;
+    int prepTime;
+
+    public Result(ClassOptions classOptions, LocalDate examDate, LocalDate start, int backupTries, int prepTime) {
+        this.classOptions = classOptions;
+        this.examDate = examDate;
+        this.start = start;
+        this.backupTries = backupTries;
         this.prepTime = prepTime;
     }
 }

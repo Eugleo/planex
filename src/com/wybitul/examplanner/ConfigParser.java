@@ -2,70 +2,61 @@ package com.wybitul.examplanner;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ConfigParser {
+    private static PeekScanner sc;
+
     private ConfigParser() { }
 
-    public static Config parse(String path) throws MissingFieldException, IncorrectConfigFileException, FileNotFoundException {
+    public static Optional<Config> parse(String path) {
         Config.Builder configBuilder = new Config.Builder();
-        int lineNumber = 0;
+
         try {
-            Scanner sc = new Scanner(new File(path));
+            sc = new PeekScanner(new File(path));
 
             // Reading the header
-            while (sc.hasNextLine()) {
+            WeightsConfig.Builder wb = new WeightsConfig.Builder(Config.defaultWeightsConfig);
+            while (sc.peekNextLine() != null && !sc.peekNextLine().startsWith("+++")) {
                 String line = sc.nextLine();
-                lineNumber++;
-                if (line.startsWith("-")) {
-                    configBuilder.parse(line);
-                } else if (line.startsWith("+++")) {
-                    // End of header
-                    break;
-                }
+                if (line.startsWith("-")) { wb.parse(line); }
             }
-
-            String currentClass = "default";
-            ClassParams defaultClassParams = new ClassParams();
-            ClassParams.Builder classParamsBuilder = new ClassParams.Builder(defaultClassParams);
 
             // Reading the body
+            ClassOptions.Builder currentClassBuilder = new ClassOptions.Builder(Config.defaultClassOptions);
             while (sc.hasNextLine()) {
-                String line = sc.nextLine();
-                lineNumber++;
-                if (line.startsWith("==")) {
-                    ClassParams cp = classParamsBuilder.build();
-                    // Add "...zp" to ids of colloquia
-                    configBuilder.addClassParams(cp.isColloquium ? currentClass + "zp" : currentClass, cp);
-                    currentClass = parseCurrentClass(line);
-                    classParamsBuilder = new ClassParams.Builder(new ClassParams(defaultClassParams));
-                } else if (line.startsWith("-")) {
-                    classParamsBuilder.parse(line);
+                ClassOptions classOpts = parseClassOptions(currentClassBuilder);
+                configBuilder.addClassOptions(classOpts);
+
+                if (sc.peekNextLine() != null && !sc.peekNextLine().startsWith("==")) {
+                    currentClassBuilder = new ClassOptions.Builder(parseClass(sc.nextLine()));
                 }
             }
-            // Add the last class
-            ClassParams cp = classParamsBuilder.build();
-            configBuilder.addClassParams(cp.isColloquium ? currentClass + "zp" : currentClass, cp);
-        } catch (MissingFieldException e) {
-            System.out.printf("%s near line %d\n", e.getMessage(), lineNumber);
-            throw e;
+
+            return Optional.of(configBuilder.createConfig());
         } catch (IncorrectConfigFileException e) {
-            System.out.printf("Error in configuration file on line %d\n", lineNumber);
-            throw e;
+            System.out.printf("Error in configuration file on line %d\n", sc.getLineNumber());
         } catch (FileNotFoundException e) {
             System.out.printf("Can't find the file %s\n", path);
-            throw e;
         }
-        return configBuilder.build();
+        return Optional.empty();
     }
 
-    private static String parseCurrentClass(String line) throws IncorrectConfigFileException {
-        Pattern p = Pattern.compile("^==\\s+.*\\s+\\((.*)\\)\\s*$");
+    private static ClassOptions parseClassOptions(ClassOptions.Builder b) throws IncorrectConfigFileException {
+        while (sc.peekNextLine() != null && !sc.peekNextLine().startsWith("==")) {
+            String line = sc.nextLine();
+            if (line.startsWith("-")) { b.parse(line); }
+        }
+        return b.createClassOptions();
+    }
+
+    private static ClassInfo parseClass(String line) throws IncorrectConfigFileException {
+        Pattern p = Pattern.compile("^==\\s+(.*)\\s+\\((.*)\\)\\s*$");
         Matcher m = p.matcher(line);
         if (m.find()) {
-            return m.group(1);
+            return new ClassInfo(new ID(m.group(2)), m.group(1), Type.EXAM);
         } else {
             throw new IncorrectConfigFileException();
         }

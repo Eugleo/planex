@@ -27,5 +27,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="org.jsoup:jsoup:1.12.2" level="project" />
   </component>
 </module>

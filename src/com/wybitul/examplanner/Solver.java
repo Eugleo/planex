@@ -3,45 +3,35 @@ package com.wybitul.examplanner;
 import com.google.ortools.sat.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Solver {
     Model model;
     CpSolver solver = new CpSolver();
-    LocalDate firstDate;
+    LocalDate beginning;
 
-    Solver(Model model, LocalDate firstDate) {
+    Solver(Model model) {
         this.model = model;
-        this.firstDate = firstDate;
+        this.beginning = model.beginning;
     }
 
-    public List<Result> solve() {
+    public Set<Result> solve(Consumer<CpSolverStatus> statusConsumer) {
         CpSolverStatus status = solver.solve(model.model);
-        System.out.printf("Solution: %s\n\n", status);
+        if (statusConsumer != null) { statusConsumer.accept(status); }
 
-        List<LocalDate> examDates = model.ends.stream()
-                .map(v -> solver.value(v))
-                .map(i -> firstDate.plusDays(i))
-                .collect(Collectors.toList());
+        return model.classModels.stream()
+                .map(cm -> new Result(cm.classOptions, varToDate(cm.end), varToDate(cm.start),
+                        varToInt(cm.backupTries), varToInt(cm.preparationTime)))
+                .collect(Collectors.toSet());
+    }
 
-        List<Exam> exams = new ArrayList<>();
-        for (int i = 0; i < examDates.size(); i++) {
-            int finalI = i;
-            Exam exam = model.classes.get(i).exams.stream()
-                    .filter(e -> e.date.equals(examDates.get(finalI)))
-                    .findFirst()
-                    .orElseThrow();
-            exams.add(exam);
-        }
+    private int varToInt(IntVar n) {
+        return Math.toIntExact(solver.value(n));
+    }
 
-        List<Result> result = new ArrayList<>();
-        for (int i = 0; i < exams.size(); i++) {
-            Result r = new Result(model.classes.get(i), exams.get(i), solver.value(model.prepTimes.get(i)));
-            result.add(r);
-        }
-
-        return result;
+    private LocalDate varToDate(IntVar n) {
+        return beginning.plusDays(solver.value(n));
     }
 }

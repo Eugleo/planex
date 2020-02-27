@@ -1,42 +1,36 @@
 package com.wybitul.examplanner;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-public class Config implements HasValidation {
-    String excelFilePath;
-    LocalDate firstDate;
-    Map<String, ClassParams> classParams = new HashMap<>();
-    WeightConfigurator weightConfigurator = new WeightConfigurator();
+public class Config {
+    LocalDate beginning;
+    Set<ClassOptions> classOptions;
+    WeightsConfig weightsConfig;
 
-    @Override
-    public void validate() throws MissingFieldException {
-        if (excelFilePath == null) {
-            throw new MissingFieldException("Missing path to excel file with exam dates. Set with \"- tabulka: path/to/file.xlsx\".");
-        }
+    public static WeightsConfig defaultWeightsConfig =
+            new WeightsConfig(new StatusFunction(3, 2, 1), 1, 1, 1);
+    public static ClassOptions defaultClassOptions =
+            new ClassOptions(
+                null, Status.V, 0, 0, 1, 0, 0,
+                false, null, null, new ArrayList<>()
+            );
 
-        if (firstDate == null) {
-            throw new MissingFieldException("Missing the date on which you begin to learn. Set with \"- začátek: DAY. MONTH. YEAR\".");
-        }
-
-        if (weightConfigurator.typeToInt == null) {
-            throw new MissingFieldException("Missing the function which maps class status (P/PVP/V) to a number. Set with \"- st: #P, #PVP, #V\".");
-        }
+    public Config(LocalDate beginning, Set<ClassOptions> classOptions, WeightsConfig weightsConfig) {
+        this.beginning = beginning;
+        this.classOptions = classOptions;
+        this.weightsConfig = weightsConfig;
     }
 
-    static class Builder extends OptionBuilder<Config> {
-        public Builder() {
-            super(new Config());
+    static class Builder implements OptionParser {
+        private LocalDate firstDate;
+        private Set<ClassOptions> classOptions = new HashSet<>();
+        private WeightsConfig weightsConfig;
 
-            addOption("tabulka", (value, c) -> c.excelFilePath = value);
-
-            addOption("začátek", (value, c) -> {
+        {
+            addOption("začátek", value -> {
                 Pattern p = Pattern.compile("^(\\d{1,2})\\.\\s*(\\d{1,2})\\.\\s*(\\d{4})");
                 Matcher m = p.matcher(value);
                 m.find();
@@ -44,38 +38,27 @@ public class Config implements HasValidation {
                 int day = Integer.parseInt(m.group(1));
                 int month = Integer.parseInt(m.group(2));
                 int year = Integer.parseInt(m.group(3));
-                c.firstDate = LocalDate.of(year, month, day);
-            });
-
-            addOption("v", (value, c) -> c.weightConfigurator.weight = Integer.parseInt(value));
-
-            addOption("k", (value, c) -> c.weightConfigurator.credits = Integer.parseInt(value));
-
-            addOption("s", (value, c) -> c.weightConfigurator.type = Integer.parseInt(value));
-
-            addOption("st", (value, c) -> {
-                List<Integer> values = Arrays.stream(value.split(",\\s*"))
-                        .map(s -> Integer.parseInt(s))
-                        .collect(Collectors.toList());
-                int v1 = values.get(0);
-                int v2 = values.get(1);
-                int v3 = values.get(2);
-                c.weightConfigurator.typeToInt = type -> {
-                    switch (type) {
-                        case P:
-                            return v1;
-                        case PVP:
-                            return v2;
-                        default:
-                            return v3;
-                    }
-                };
+                firstDate = LocalDate.of(year, month, day);
             });
         }
 
-        public Builder addClassParams(String key, ClassParams cp) {
-            object.classParams.put(key, cp);
+        public Builder addClassOptions(ClassOptions opt) {
+            classOptions.add(opt);
             return this;
+        }
+
+        public Builder setFirstDate(LocalDate firstDate) {
+            this.firstDate = firstDate;
+            return this;
+        }
+
+        public Builder setWeightsConfig(WeightsConfig weightsConfig) {
+            this.weightsConfig = weightsConfig;
+            return this;
+        }
+
+        public Config createConfig() {
+            return new Config(firstDate, classOptions, weightsConfig);
         }
     }
 }
