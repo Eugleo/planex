@@ -11,10 +11,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ClassParser {
-    private static Map<ClassInfo, Set<LocalDate>> dates = new HashMap<>();
+    private static final Map<ClassInfo, Set<LocalDate>> dates = new HashMap<>();
 
-    private static Pattern namePattern = Pattern.compile("^(.*) \\((.*)\\)$");
-    private static Pattern typePattern = Pattern.compile("^(zápočet/kolokvium|zkouška)$");
+    private static final Pattern namePattern = Pattern.compile("^(.*) \\((.*)\\)$");
+    private static final Pattern typePattern = Pattern.compile("^(zápočet/kolokvium|zkouška)$");
 
     private ClassParser() { }
 
@@ -56,7 +56,7 @@ public class ClassParser {
         dates.putIfAbsent(key, examDates);
 
         Utils.parseDate(rawDate, -1).ifPresentOrElse(
-                d -> examDates.add(d),
+                examDates::add,
                 () -> System.out.printf("Encountered a problem while reading row %d\n", row.getRowNum() + 1)
         );
     }

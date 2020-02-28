@@ -1,9 +1,9 @@
 package com.wybitul.examplanner;
 
 public class WordFormatter {
-    String zeroAndFivePlus;
-    String one;
-    String twoToFive;
+    final String zeroAndFivePlus;
+    final String one;
+    final String twoToFive;
 
     public WordFormatter(String zeroAndFivePlus, String one, String twoToFive) {
         this.zeroAndFivePlus = zeroAndFivePlus;

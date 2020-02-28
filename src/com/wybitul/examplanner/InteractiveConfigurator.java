@@ -2,13 +2,12 @@ package com.wybitul.examplanner;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class InteractiveConfigurator {
-    private static Config.Builder configBuilder = new Config.Builder();
-    private static Scanner sc = new Scanner(System.in);
+    private static final Config.Builder configBuilder = new Config.Builder();
+    private static final Scanner sc = new Scanner(System.in);
     private static int defaultYear = -1;
 
     private InteractiveConfigurator() { }
@@ -155,7 +154,7 @@ public class InteractiveConfigurator {
     }
 
     private static WeightsConfig getWeightsConfig() {
-        WeightsConfig.Builder b = new WeightsConfig.Builder(Config.defaultWeightsConfig);
+        WeightsConfig.Builder b = new WeightsConfig.Builder();
         msg("Předmětům je přidělován čas na přípravu úměrně k jejich důležitosti.",
                 "Důležitost předmětu je vypočítána jako: v * váha + s * st(status) + k * kredity,",
                 "kde váha, status (P/PVP/V) a kredity jsou vlastnosti předmětu a v, s, st, k jsou,",

@@ -20,12 +20,12 @@ public class ConfigWriter {
             // Get the most common year
             defaultYear = config.classOptions.stream()
                     .flatMap(opt -> opt.examDates.stream())
-                    .map(d -> d.getYear())
+                    .map(LocalDate::getYear)
                     .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                     .entrySet()
                     .stream()
-                    .max(Comparator.comparing(Map.Entry::getValue))
-                    .map(e -> e.getKey())
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
                     .orElse(-1);
 
             comment("Tento konfigurační soubor byl vytvořen " +
@@ -79,7 +79,7 @@ public class ConfigWriter {
         out.printf("= %s (%s)\n", info.name, info.id.str);
     }
 
-    private static void writeClassOptions(ClassOptions opts1, ClassOptions opts2, boolean writeStatus) {
+    private static void writeClassOptions(ClassOptions opts1, ClassOptions opts2, boolean isSpecificClass) {
         List<String> exams1 = opts1.examDates.stream()
                 .sorted(Comparator.naturalOrder())
                 .map(d -> Utils.formatDate(d, defaultYear, "x"))
@@ -94,7 +94,8 @@ public class ConfigWriter {
         Map<String, Object> optionMap2 = getOptionMap(exams2, opts2);
 
         optionMap1.forEach((opt, val) -> {
-            boolean condition = writeStatus ? opt.equals("status") || opt.equals("příprava") : false;
+            // opts1 aren't global parameters => always write status and příprava fields
+            boolean condition = isSpecificClass && (opt.equals("status") || opt.equals("příprava"));
             if (condition || !optionMap2.get(opt).equals(val)) {
                 writeOption(opt, val);
             }
@@ -109,7 +110,7 @@ public class ConfigWriter {
 
     private static Map<String, Object> getOptionMap(List<String> exams, ClassOptions opts) {
         WordFormatter days = new WordFormatter("dní", "den", "dny");
-        Map<String, Object> options = Map.of(
+        return Map.of(
                 "kredity", opts.credits,
                 "status", opts.status.name(),
                 "váha", opts.weight,
@@ -121,7 +122,6 @@ public class ConfigWriter {
                         Utils.formatDate(opts.highBound, defaultYear, "x")),
                 "zkoušky", String.join(", ", exams)
         );
-        return options;
     }
 
     private static void writeOption(String name, Object value) {

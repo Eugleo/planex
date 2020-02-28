@@ -20,29 +20,26 @@ public class ConfigParser {
             int defaultYear = -1;
 
             // Reading the weight config
-            WeightsConfig.Builder wb = new WeightsConfig.Builder(Config.defaultWeightsConfig);
+            WeightsConfig.Builder wb = new WeightsConfig.Builder();
             while (sc.peekNextLine() != null && !sc.peekNextLine().startsWith("+++")) {
                 String line = sc.nextLine();
                 if (line.startsWith("- rok")) {
                     Pattern p = Pattern.compile("^- rok:\\s*(\\d{4})");
                     Matcher m = p.matcher(line);
-                    try {
-                        m.find();
-                        defaultYear = Integer.parseInt(m.group(1));
-                    } catch (Exception e) {
-                        throw new IncorrectConfigFileException("Incorrect date specification");
-                    }
+
+                    if (!m.find()) { throw new IncorrectConfigFileException("Incorrect date specification"); }
+
+                    defaultYear = Integer.parseInt(m.group(1));
+                    configBuilder.defaultYear = defaultYear;
                 } else if (line.startsWith("- začátek")) {
                     Pattern p = Pattern.compile("^- začátek:\\s*(.*)\\s*$");
                     Matcher m = p.matcher(line);
 
-                    if (m.find()) {
-                        LocalDate date = Utils.parseDate(m.group(1), defaultYear)
-                                .orElseThrow(() -> new IncorrectConfigFileException("Incorrect date format"));
-                        configBuilder.setBeginning(date);
-                    } else {
-                        throw new IncorrectConfigFileException("Incorrect date format");
-                    }
+                    if (!m.find()) { throw new IncorrectConfigFileException("Incorrect date format"); }
+
+                    LocalDate date = Utils.parseDate(m.group(1), defaultYear)
+                            .orElseThrow(() -> new IncorrectConfigFileException("Incorrect date format"));
+                    configBuilder.setBeginning(date);
                 } else if (line.startsWith("-")) {
                     wb.parse(line);
                 }

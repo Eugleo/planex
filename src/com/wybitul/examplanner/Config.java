@@ -2,18 +2,16 @@ package com.wybitul.examplanner;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Config {
-    LocalDate beginning;
-    Set<ClassOptions> classOptions;
-    WeightsConfig weightsConfig;
-    public ClassOptions userDefaultOpts;
+    final LocalDate beginning;
+    final Set<ClassOptions> classOptions;
+    final WeightsConfig weightsConfig;
+    public final ClassOptions userDefaultOpts;
 
-    public static WeightsConfig defaultWeightsConfig =
+    public static final WeightsConfig defaultWeightsConfig =
             new WeightsConfig(new StatusFunction(3, 2, 1), 1, 1, 1);
-    public static ClassOptions defaultClassOptions = new ClassOptions(
+    public static final ClassOptions defaultClassOptions = new ClassOptions(
             null, Status.V, 0, 0, 1, 0, 0,
             false, null, null, new HashSet<>()
     );
@@ -26,24 +24,22 @@ public class Config {
         this.weightsConfig = weightsConfig;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     static class Builder extends OptionParser {
         private LocalDate beginning;
         ClassOptions userDefaultOpts = Config.defaultClassOptions;
-        private Set<ClassOptions> classOptions = new HashSet<>();
+        private final Set<ClassOptions> classOptions = new HashSet<>();
         private WeightsConfig weightsConfig;
+        int defaultYear;
 
+        // ADAM jak zformátovat tyhle víceřádkové function cally?
         {
-            addOption("začátek", value -> {
-                Pattern p = Pattern.compile("^(\\d{1,2})\\.\\s*(\\d{1,2})\\.\\s*(\\d{4})");
-                Matcher m = p.matcher(value);
-                m.find();
-
-                int day = Integer.parseInt(m.group(1));
-                int month = Integer.parseInt(m.group(2));
-                int year = Integer.parseInt(m.group(3));
-                beginning = LocalDate.of(year, month, day);
-            });
+            addOption("začátek", value ->
+                    setBeginning(Utils.parseDate(value, defaultYear)
+                            .orElseThrow(() -> new IncorrectConfigFileException("Incorrect date format"))));
         }
+
+        Builder() { }
 
         public Builder addClassOptions(ClassOptions opt) {
             classOptions.add(opt);

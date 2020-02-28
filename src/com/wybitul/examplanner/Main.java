@@ -6,14 +6,14 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Main {
-    private static Config config;
-    private static Scanner sc = new Scanner(System.in);
+    private static final Scanner sc = new Scanner(System.in);
 
     static {
         System.loadLibrary("jniortools");
     }
 
     public static void main(String[] args) {
+        Config config;
         if (args.length == 0) {
             System.out.println("Pokud již máte konfigurační soubor, zadejte cestu k němu. " +
                     "Pokud ne, nezadávejte nic; spustí se interaktivní konfigurátor, který vás provede " +
@@ -100,7 +100,7 @@ public class Main {
 
     private static void printTable(Matrix<Object> table) {
         List<Integer> lengths = table.getColumns().stream()
-                .map(c -> c.stream().map(o -> o.toString().length()).max(Comparator.naturalOrder()).get())
+                .map(c -> c.stream().map(o -> o.toString().length()).max(Comparator.naturalOrder()).orElse(0))
                 .collect(Collectors.toList());
 
         Object[][] tableArray = table.toArray(Object.class);

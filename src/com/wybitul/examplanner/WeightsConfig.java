@@ -2,14 +2,13 @@ package com.wybitul.examplanner;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class WeightsConfig {
-    StatusFunction st;
-    int s;
-    int w;
-    int c;
+    final StatusFunction st;
+    final int s;
+    final int w;
+    final int c;
 
     public WeightsConfig(StatusFunction st, int s, int w, int c) {
         this.st = st;
@@ -18,12 +17,15 @@ public class WeightsConfig {
         this.c = c;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     static class Builder extends OptionParser {
         private StatusFunction st;
         private int s;
         private int w;
         private int c;
 
+        // ADAM opravdu nebudou {w, c, s, st} použity?
+        // Neměly by být nastaveny až poté, co se ta lambda zavolá? (i.e. po zavolání konstruktoru)
         {
             addOption("v", value -> w = Integer.parseInt(value));
 
@@ -39,13 +41,11 @@ public class WeightsConfig {
             });
         }
 
-        Builder() { }
-
-        Builder(WeightsConfig defaultConfig) {
-            this.st = defaultConfig.st;
-            this.s = defaultConfig.s;
-            this.w = defaultConfig.w;
-            this.c = defaultConfig.c;
+        Builder() {
+            this.st = Config.defaultWeightsConfig.st;
+            this.s = Config.defaultWeightsConfig.s;
+            this.w = Config.defaultWeightsConfig.w;
+            this.c = Config.defaultWeightsConfig.c;
         }
 
         public Builder setStatusFunction(StatusFunction st) {

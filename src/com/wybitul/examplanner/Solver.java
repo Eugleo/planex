@@ -8,9 +8,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Solver {
-    Model model;
-    CpSolver solver = new CpSolver();
-    LocalDate beginning;
+    final Model model;
+    final CpSolver solver = new CpSolver();
+    final LocalDate beginning;
 
     Solver(Model model) {
         this.model = model;

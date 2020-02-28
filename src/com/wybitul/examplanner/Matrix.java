@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@SuppressWarnings("unused")
 public class Matrix<T> {
-    List<List<T>> columns = new ArrayList<>();
+    final List<List<T>> columns = new ArrayList<>();
 
     public void addColumn(Collection<T> col) {
         columns.add(new ArrayList<>(col));
@@ -48,7 +49,6 @@ public class Matrix<T> {
         int cols = columns.size();
         int rows = cols > 0 ? columns.get(0).size() : 0;
 
-        @SuppressWarnings("unchecked")
         int[][] result = new int[rows][cols];
         IntStream.range(0, rows).forEach(i ->
                 IntStream.range(0, cols).forEach(j ->

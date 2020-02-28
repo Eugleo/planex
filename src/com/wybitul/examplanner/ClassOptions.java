@@ -12,22 +12,23 @@ enum Status {
     P, PVP, V
 }
 
+@SuppressWarnings("UnusedReturnValue")
 public class ClassOptions {
-    ClassInfo classInfo;
+    final ClassInfo classInfo;
 
-    Status status;
-    int idealPrepTime;
-    int minPrepTime;
-    int weight;
-    int credits;
-    int backupTries;
+    final Status status;
+    final int idealPrepTime;
+    final int minPrepTime;
+    final int weight;
+    final int credits;
+    final int backupTries;
 
-    LocalDate lowBound;
-    LocalDate highBound;
+    final LocalDate lowBound;
+    final LocalDate highBound;
 
-    Set<LocalDate> examDates;
+    final Set<LocalDate> examDates;
 
-    boolean ignore;
+    final boolean ignore;
 
     ClassOptions(ClassInfo classInfo, Status status, int idealPrepTime, int minPrepTime, int weight, int credits,
                  int backupTries, boolean ignore, LocalDate lowBound, LocalDate highBound,
@@ -72,8 +73,8 @@ public class ClassOptions {
 
                 if (!generalM.find()) { throw new IncorrectConfigFileException("Incorrect date range format"); }
 
-                lowBound = Utils.parseDate(generalM.group(1), defaultYear).orElse(null);
-                highBound = Utils.parseDate(generalM.group(2), defaultYear).orElse(null);
+                setLowBound(Utils.parseDate(generalM.group(1), defaultYear).orElse(null));
+                setHighBound(Utils.parseDate(generalM.group(2), defaultYear).orElse(null));
             });
 
             addOption("příprava", value -> {
@@ -123,8 +124,8 @@ public class ClassOptions {
             addOption("termíny", value -> backupTries = Integer.parseInt(value));
 
             addOption("zkoušky", value -> {
-                String[] dateStrs = value.split(",\\s*");
-                examDates = Arrays.stream(dateStrs)
+                String[] dateStrings = value.split(",\\s*");
+                examDates = Arrays.stream(dateStrings)
                         .map(str -> Utils.parseDate(str, defaultYear))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
@@ -155,11 +156,6 @@ public class ClassOptions {
             highBound = defaultClassOpts.highBound;
             ignore = defaultClassOpts.ignore;
             examDates = defaultClassOpts.examDates;
-        }
-
-        public Builder setClass(ClassInfo classInfo) {
-            this.classInfo = classInfo;
-            return this;
         }
 
         public Builder setStatus(Status status) {

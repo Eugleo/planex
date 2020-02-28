@@ -6,14 +6,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class OptionParser {
-    Map<String, ThrowingConsumer<String>> optConsumers = new HashMap<>();
-    Map<String, ThrowingRunnable> flagActions = new HashMap<>();
+    final Map<String, ThrowingConsumer<String>> optConsumers = new HashMap<>();
+    final Map<String, Runnable> flagActions = new HashMap<>();
 
     void addOption(String option, ThrowingConsumer<String> f) {
         optConsumers.put(option, f);
     }
 
-    void addFlag(String flag, ThrowingRunnable f) {
+    void addFlag(String flag, Runnable f) {
         flagActions.put(flag, f);
         optConsumers.put(flag, s -> {
             switch (s.toLowerCase()) {

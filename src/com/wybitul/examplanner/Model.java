@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Model {
-    CpModel model = new CpModel();
-    Set<ClassModel> classModels = new HashSet<>();
+    final CpModel model = new CpModel();
+    final Set<ClassModel> classModels = new HashSet<>();
 
-    LocalDate beginning;
+    final LocalDate beginning;
 
     Model(Config config) throws ModelException {
         this.beginning = config.beginning;
@@ -103,16 +103,6 @@ public class Model {
         );
     }
 
-    // ADAM Existuje lepší způsob jak převést List<Integer> na int[][]?
-    private int[][] toArray(List<Integer> list) {
-        int[][] result = new int[list.size()][2];
-        for (int i = 0; i < list.size(); i++) {
-            result[i][0] = list.get(i);
-            result[i][1] = list.size() - 1 - i;
-        }
-        return result;
-    }
-
     // Return a list of days which are just before an exam
     private int[][] getEndDays(ClassOptions classOptions, LocalDate firstDay) {
         Matrix<Integer> matrix = new Matrix<>();
@@ -123,8 +113,7 @@ public class Model {
                 .collect(Collectors.toList());
         matrix.addColumn(endDays);
 
-        List<Integer> remainingBackupTries = IntStream.range(0, endDays.size())
-                .mapToObj(i -> i).collect(Collectors.toList());
+        List<Integer> remainingBackupTries = IntStream.range(0, endDays.size()).boxed().collect(Collectors.toList());
         Collections.reverse(remainingBackupTries);
         matrix.addColumn(remainingBackupTries);
 

@@ -3,7 +3,7 @@ package com.wybitul.examplanner;
 import java.util.Objects;
 
 public class ID {
-    String str;
+    final String str;
 
     public ID(String str) {
         this.str = str;

@@ -10,10 +10,11 @@ import java.util.*;
 public class CreditDownloader {
     private static HashMap<ID, Integer> creditMap;
 
-    private static String pathToMap = "credits.map";
-    private static String pathToCredits = "#content table > tbody > tr > th:contains(E-kredity:) + td";
-    private static String sisURL = "https://is.cuni.cz/studium/predmety/index.php?do=predmet&kod=";
+    private static final String pathToMap = "credits.map";
+    private static final String pathToCredits = "#content table > tbody > tr > th:contains(E-kredity:) + td";
+    private static final String sisURL = "https://is.cuni.cz/studium/predmety/index.php?do=predmet&kod=";
 
+    // ADAM jak se zbavit warningu o unchecked castu?
     static {
         try (FileInputStream fis = new FileInputStream(new File(pathToMap));
              ObjectInputStream ois = new ObjectInputStream(fis)) {
@@ -52,7 +53,8 @@ public class CreditDownloader {
         return creditMap;
     }
 
-    public static void reset() {
-        new File(pathToMap).delete();
+    @SuppressWarnings("unused")
+    public static boolean reset() {
+        return new File(pathToMap).delete();
     }
 }

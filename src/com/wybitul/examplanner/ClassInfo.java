@@ -7,8 +7,8 @@ enum Type {
 }
 
 public class ClassInfo {
-    ID id;
-    String name;
+    final ID id;
+    final String name;
     Type type;
 
     public ClassInfo(ID id, String name, Type type) {
