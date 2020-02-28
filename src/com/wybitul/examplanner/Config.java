@@ -9,23 +9,26 @@ public class Config {
     LocalDate beginning;
     Set<ClassOptions> classOptions;
     WeightsConfig weightsConfig;
+    public ClassOptions userDefaultOpts;
 
     public static WeightsConfig defaultWeightsConfig =
             new WeightsConfig(new StatusFunction(3, 2, 1), 1, 1, 1);
-    public static ClassOptions defaultClassOptions =
-            new ClassOptions(
-                null, Status.V, 0, 0, 1, 0, 0,
-                false, null, null, new ArrayList<>()
-            );
+    public static ClassOptions defaultClassOptions = new ClassOptions(
+            null, Status.V, 0, 0, 1, 0, 0,
+            false, null, null, new HashSet<>()
+    );
 
-    public Config(LocalDate beginning, Set<ClassOptions> classOptions, WeightsConfig weightsConfig) {
+    public Config(LocalDate beginning, ClassOptions userDefaultOpts,
+                  Set<ClassOptions> classOptions, WeightsConfig weightsConfig) {
         this.beginning = beginning;
+        this.userDefaultOpts = userDefaultOpts;
         this.classOptions = classOptions;
         this.weightsConfig = weightsConfig;
     }
 
-    static class Builder implements OptionParser {
-        private LocalDate firstDate;
+    static class Builder extends OptionParser {
+        private LocalDate beginning;
+        ClassOptions userDefaultOpts = Config.defaultClassOptions;
         private Set<ClassOptions> classOptions = new HashSet<>();
         private WeightsConfig weightsConfig;
 
@@ -38,7 +41,7 @@ public class Config {
                 int day = Integer.parseInt(m.group(1));
                 int month = Integer.parseInt(m.group(2));
                 int year = Integer.parseInt(m.group(3));
-                firstDate = LocalDate.of(year, month, day);
+                beginning = LocalDate.of(year, month, day);
             });
         }
 
@@ -47,8 +50,8 @@ public class Config {
             return this;
         }
 
-        public Builder setFirstDate(LocalDate firstDate) {
-            this.firstDate = firstDate;
+        public Builder setBeginning(LocalDate beginning) {
+            this.beginning = beginning;
             return this;
         }
 
@@ -57,8 +60,13 @@ public class Config {
             return this;
         }
 
+        public Builder setUserDefaultOpts(ClassOptions classOptions) {
+            this.userDefaultOpts = classOptions;
+            return this;
+        }
+
         public Config createConfig() {
-            return new Config(firstDate, classOptions, weightsConfig);
+            return new Config(beginning, userDefaultOpts, classOptions, weightsConfig);
         }
     }
 }

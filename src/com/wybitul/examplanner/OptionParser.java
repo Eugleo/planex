@@ -2,19 +2,18 @@ package com.wybitul.examplanner;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public interface OptionParser {
-    Map<String, Consumer<String>> optConsumers = new HashMap<>();
-    Map<String, Runnable> flagActions = new HashMap<>();
+public class OptionParser {
+    Map<String, ThrowingConsumer<String>> optConsumers = new HashMap<>();
+    Map<String, ThrowingRunnable> flagActions = new HashMap<>();
 
-    default void addOption(String option, Consumer<String> f) {
+    void addOption(String option, ThrowingConsumer<String> f) {
         optConsumers.put(option, f);
     }
 
-    default void addFlag(String flag, Runnable f) {
+    void addFlag(String flag, ThrowingRunnable f) {
         flagActions.put(flag, f);
         optConsumers.put(flag, s -> {
             switch (s.toLowerCase()) {
@@ -27,27 +26,53 @@ public interface OptionParser {
         });
     }
 
-    default void parse(String line) throws IncorrectConfigFileException {
+    private void parseFlag(String line) throws IncorrectConfigFileException {
+        Pattern nameP = Pattern.compile("^-\\s*([^:\\s]+)\\s*$");
+        Matcher nameM = nameP.matcher(line);
+
+        if (!nameM.find()) { throw new IncorrectConfigFileException("Incorrectly specified flag"); }
+
+        String name = nameM.group(1);
+
+        if (!flagActions.containsKey(name)) { throw new IncorrectConfigFileException("Unknown flag"); }
+
         try {
-            Pattern p = Pattern.compile("^-\\s+(.*)\\s*:\\s+(.+)\\s*$");
-            Matcher m = p.matcher(line);
-
-            if (m.find()) {
-                String name = m.group(1);
-                String value = m.group(2);
-
-                optConsumers.get(name).accept(value);
-            } else {
-                Pattern p2 = Pattern.compile("^-\\s+(.*)\\s*$");
-                Matcher m2 = p2.matcher(line);
-                m2.find();
-
-                String name = m2.group(1);
-
-                flagActions.get(name).run();
-            }
+            flagActions.get(name).run();
         } catch (Exception e) {
-            throw new IncorrectConfigFileException();
+            throw new IncorrectConfigFileException(e.getMessage());
+        }
+    }
+
+    private void parseOption(String line) throws IncorrectConfigFileException {
+        Pattern nameP = Pattern.compile("^-\\s*([^:\\s]+):");
+        Matcher nameM = nameP.matcher(line);
+
+        if (!nameM.find()) { throw new IncorrectConfigFileException("Incorrectly specified option name"); }
+
+        String name = nameM.group(1);
+        Pattern valueP = Pattern.compile(":\\s*([^:]+)\\s*$");
+        Matcher valueM = valueP.matcher(line);
+
+        if (!valueM.find()) { throw new IncorrectConfigFileException("Incorrectly specified option value"); }
+
+        String value = valueM.group(1);
+
+        if (!optConsumers.containsKey(name)) { throw new IncorrectConfigFileException("Unknown option"); }
+
+        try {
+            optConsumers.get(name).accept(value);
+        } catch (Exception e) {
+            throw new IncorrectConfigFileException(e.getMessage());
+        }
+    }
+
+    public void parse(String line) throws IncorrectConfigFileException {
+        if (line.matches("^-.*:.*$")) {
+            parseOption(line);
+        } else if (line.matches("^-[^:]*$")) {
+            parseFlag(line);
+        } else {
+            throw new IncorrectConfigFileException("Incorrectly specified option");
         }
     }
 }

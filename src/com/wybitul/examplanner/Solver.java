@@ -22,7 +22,7 @@ public class Solver {
         if (statusConsumer != null) { statusConsumer.accept(status); }
 
         return model.classModels.stream()
-                .map(cm -> new Result(cm.classOptions, varToDate(cm.end), varToDate(cm.start),
+                .map(cm -> new Result(cm.classOptions, varToDate(cm.end), varToDate(cm.start).plusDays(1),
                         varToInt(cm.backupTries), varToInt(cm.preparationTime)))
                 .collect(Collectors.toSet());
     }

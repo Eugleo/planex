@@ -18,7 +18,7 @@ public class WeightsConfig {
         this.c = c;
     }
 
-    static class Builder implements OptionParser {
+    static class Builder extends OptionParser {
         private StatusFunction st;
         private int s;
         private int w;

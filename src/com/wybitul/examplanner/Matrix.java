@@ -11,7 +11,7 @@ public class Matrix<T> {
     List<List<T>> columns = new ArrayList<>();
 
     public void addColumn(Collection<T> col) {
-        columns.add(List.copyOf(col));
+        columns.add(new ArrayList<>(col));
     }
 
     public void addColumn(int index, Collection<T> col) {
@@ -34,28 +34,31 @@ public class Matrix<T> {
         int rows = cols > 0 ? columns.get(0).size() : 0;
 
         @SuppressWarnings("unchecked")
-        T[][] result = (T[][]) Array.newInstance(tClass, cols, rows);
+        T[][] result = (T[][]) Array.newInstance(tClass, rows, cols);
         IntStream.range(0, rows).forEach(i ->
-            IntStream.range(0, cols).forEach(j -> result[i][j] = columns.get(j).get(i))
+                IntStream.range(0, cols).forEach(j ->
+                        result[i][j] = columns.get(j).get(i)
+                )
         );
         return result;
     }
 
+    // ADAM Jde tohle nějak spojit s předchozí metodou?
     public int[][] toIntArray() {
         int cols = columns.size();
         int rows = cols > 0 ? columns.get(0).size() : 0;
 
         @SuppressWarnings("unchecked")
-        int[][] result = new int[cols][rows];
+        int[][] result = new int[rows][cols];
         IntStream.range(0, rows).forEach(i ->
-                IntStream.range(0, cols).forEach(j -> result[i][j] = (int) columns.get(j).get(i))
+                IntStream.range(0, cols).forEach(j ->
+                        result[i][j] = (int) columns.get(j).get(i)
+                )
         );
         return result;
     }
 
-    public List<List<T>> getColumns() {
-        return columns;
-    }
+    public List<List<T>> getColumns() { return columns; }
 
     public List<List<T>> getRows() {
         int cols = columns.size();

@@ -6,6 +6,8 @@ class ModelException extends Exception {
     }
 }
 
-class IncorrectConfigFileException extends Exception { }
-
-class MissingFieldException extends Exception { }
+class IncorrectConfigFileException extends Exception {
+    IncorrectConfigFileException(String message) {
+        super(message);
+    }
+}

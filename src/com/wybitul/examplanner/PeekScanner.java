@@ -20,7 +20,7 @@ public class PeekScanner {
 
     public String nextLine() {
         String temp = nextLine;
-        nextLine = sc.nextLine();
+        nextLine = sc.hasNextLine() ? sc.nextLine() : null;
         lineNumber += 1;
         return temp;
     }

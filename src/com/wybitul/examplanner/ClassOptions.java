@@ -2,7 +2,8 @@ package com.wybitul.examplanner;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -24,13 +25,13 @@ public class ClassOptions {
     LocalDate lowBound;
     LocalDate highBound;
 
-    List<LocalDate> examDates;
+    Set<LocalDate> examDates;
 
     boolean ignore;
 
     ClassOptions(ClassInfo classInfo, Status status, int idealPrepTime, int minPrepTime, int weight, int credits,
                  int backupTries, boolean ignore, LocalDate lowBound, LocalDate highBound,
-                 List<LocalDate> examDates) {
+                 Set<LocalDate> examDates) {
         this.classInfo = classInfo;
         this.status = status;
         this.idealPrepTime = idealPrepTime;
@@ -48,43 +49,37 @@ public class ClassOptions {
         return w.s * w.st.apply(status) + w.w * weight + w.c * credits;
     }
 
-    static class Builder implements OptionParser {
+    static class Builder extends OptionParser {
         ClassInfo classInfo;
         private Status status;
         private int idealPrepTime;
         private int minPrepTime;
         private int weight;
         int credits;
+        int defaultYear;
         private int backupTries;
         private LocalDate lowBound;
         private LocalDate highBound;
         private boolean ignore = false;
-        private List<LocalDate> examDates;
+        private Set<LocalDate> examDates;
 
-        // TODO Refactor parseDate
+        // ADAM Rád bych místo Stringů použil nějaký enum, kde by byly uloženy všechny možné optiony
+        // Jak na to?
         {
-            addOption("omezení", value -> {
-                String date = "((\\d{1,2})\\.\\s*(\\d{1,2})\\.\\s*(\\d{4})|.)";
-                Pattern p = Pattern.compile(date + "\\s*-\\s*" + date);
-                Matcher m = p.matcher(value);
-                m.find();
-                if (!m.group(1).matches("^.$")) {
-                    int day = Integer.parseInt(m.group(2));
-                    int month = Integer.parseInt(m.group(3));
-                    int year = Integer.parseInt(m.group(4));
-                    lowBound = LocalDate.of(year, month, day);
-                } else if (!m.group(5).matches("^.$")) {
-                    int day = Integer.parseInt(m.group(6));
-                    int month = Integer.parseInt(m.group(7));
-                    int year = Integer.parseInt(m.group(8));
-                    highBound = LocalDate.of(year, month, day);
-                }
+            addOption("datum", value -> {
+                Pattern generalP = Pattern.compile("^\\s*(.+)\\s*-\\s*(.+)\\s*$");
+                Matcher generalM = generalP.matcher(value);
+
+                if (!generalM.find()) { throw new IncorrectConfigFileException("Incorrect date range format"); }
+
+                lowBound = Utils.parseDate(generalM.group(1), defaultYear).orElse(null);
+                highBound = Utils.parseDate(generalM.group(2), defaultYear).orElse(null);
             });
 
             addOption("příprava", value -> {
                 Pattern p = Pattern.compile("^(\\d+)");
                 Matcher m = p.matcher(value);
-                m.find();
+                if (!m.find()) { throw new IncorrectConfigFileException("Incorrect number format"); }
                 idealPrepTime = Integer.parseInt(m.group(1));
             });
 
@@ -93,16 +88,24 @@ public class ClassOptions {
             addOption("váha", value -> weight = Integer.parseInt(value));
 
             addOption("status", value -> {
-                switch (value) {
-                    case "P":
+                switch (value.toLowerCase()) {
+                    case "povinný":
+                    case "povinné":
+                    case "p":
                         status = Status.P;
                         break;
-                    case "PVP":
+                    case "povinně volitelný":
+                    case "povinně volitelné":
+                    case "pvp":
                         status = Status.PVP;
                         break;
-                    case "V":
+                    case "volitelný":
+                    case "volitelné":
+                    case "v":
                         status = Status.V;
                         break;
+                    default:
+                        throw new IncorrectConfigFileException("Incorrect status format");
                 }
             });
 
@@ -113,8 +116,8 @@ public class ClassOptions {
             addOption("minimum", value -> {
                 Pattern p = Pattern.compile("^(\\d+)");
                 Matcher m = p.matcher(value);
-                m.find();
-                minPrepTime = Integer.parseInt(m.group(1));
+                if (!m.find()) { throw new IncorrectConfigFileException("Incorrect number format"); }
+                setMinPrepTime(Integer.parseInt(m.group(1)));
             });
 
             addOption("termíny", value -> backupTries = Integer.parseInt(value));
@@ -122,33 +125,22 @@ public class ClassOptions {
             addOption("zkoušky", value -> {
                 String[] dateStrs = value.split(",\\s*");
                 examDates = Arrays.stream(dateStrs)
-                        .map(ClassOptions.Builder::parseDate)
-                        .collect(Collectors.toList());
+                        .map(str -> Utils.parseDate(str, defaultYear))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toSet());
             });
         }
 
-        private static LocalDate parseDate(String str) {
-            String date = "(\\d{1,2})\\.\\s*(\\d{1,2})\\.\\s*(\\d{4})";
-            Pattern p = Pattern.compile(date);
-            Matcher m = p.matcher(str);
-            m.find();
-            int day = Integer.parseInt(m.group(1));
-            int month = Integer.parseInt(m.group(2));
-            int year = Integer.parseInt(m.group(3));
-            return LocalDate.of(year, month, day);
-        }
-
-        Builder(ClassInfo classInfo) {
+        Builder(ClassInfo classInfo, ClassOptions defaultClassOpts, int defaultYear) {
+            cloneFields(defaultClassOpts);
             this.classInfo = classInfo;
+            this.defaultYear = defaultYear;
         }
 
-        Builder(ClassInfo classInfo, ClassOptions defaultClassOpts) {
+        Builder(ClassOptions defaultClassOpts, int defaultYear) {
             cloneFields(defaultClassOpts);
-            classInfo = classInfo;
-        }
-
-        Builder(ClassOptions defaultClassOpts) {
-            cloneFields(defaultClassOpts);
+            this.defaultYear = defaultYear;
         }
 
         private void cloneFields(ClassOptions defaultClassOpts) {
@@ -210,7 +202,7 @@ public class ClassOptions {
             return this;
         }
 
-        public Builder setExamDates(List<LocalDate> examDates) {
+        public Builder setExamDates(Set<LocalDate> examDates) {
             this.examDates = examDates;
             return this;
         }

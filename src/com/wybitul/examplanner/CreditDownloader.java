@@ -11,8 +11,7 @@ public class CreditDownloader {
     private static HashMap<ID, Integer> creditMap;
 
     private static String pathToMap = "credits.map";
-    private static String pathToCredits = "#content > div.form_div.pageBlock > table > tbody > tr >" +
-            "td:nth-child(1) > table > tbody > tr:nth-child(6) > td";
+    private static String pathToCredits = "#content table > tbody > tr > th:contains(E-kredity:) + td";
     private static String sisURL = "https://is.cuni.cz/studium/predmety/index.php?do=predmet&kod=";
 
     static {
@@ -26,21 +25,26 @@ public class CreditDownloader {
 
     private CreditDownloader() { }
 
-    public static HashMap<ID, Integer> getCredits(Collection<ClassInfo> classInfo) {
-        classInfo.stream()
-                .map(c -> c.id)
+    public static HashMap<ID, Integer> getCredits(Collection<ID> ids) {
+        ids.stream()
                 .filter(id -> !creditMap.containsKey(id))
                 .forEach(id -> {
                     try {
-                        Document doc = Jsoup.connect(sisURL + id).get();
+                        Document doc = Jsoup.connect(sisURL + id.str).get();
                         Element e = doc.select(pathToCredits).first();
-                        int credits = Integer.parseInt(e.text());
-                        creditMap.put(id, credits);
+                        if (e != null) {
+                            int credits = Integer.parseInt(e.text());
+                            creditMap.put(id, credits);
+                        } else {
+                            System.out.println("Unable to download credits for class " + id.str);
+                        }
                     }
-                    catch (NumberFormatException | IOException ignored) { }
+                    catch (NumberFormatException | IOException e) {
+                        System.out.println("Unable to download credits for class " + id.str);
+                    }
                 });
 
-        try (FileOutputStream fos = new FileOutputStream(new File(pathToMap));
+        try (FileOutputStream fos = new FileOutputStream(pathToMap);
              ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(creditMap);
         } catch (IOException ignored) { }

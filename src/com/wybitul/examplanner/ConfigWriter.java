@@ -2,35 +2,62 @@ package com.wybitul.examplanner;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ConfigWriter {
     private static PrintStream out;
-    private static ClassOptions defOpts;
+    private static int defaultYear;
 
     private ConfigWriter() { }
 
-    public static void write(Config config, String path) {
-        try (PrintStream ps = new PrintStream(new FileOutputStream(new File(path)))) {
+    public static boolean write(Config config, String path) {
+        try (PrintStream ps = new PrintStream(new FileOutputStream(path))) {
             out = ps;
-            defOpts = config.classOptions.stream().filter(opt -> opt.classInfo == null).findFirst().get();
 
-            comment("Tento konfigurační soubor byl vytvořený " + LocalDate.now());
+            // Get the most common year
+            defaultYear = config.classOptions.stream()
+                    .flatMap(opt -> opt.examDates.stream())
+                    .map(d -> d.getYear())
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                    .entrySet()
+                    .stream()
+                    .max(Comparator.comparing(Map.Entry::getValue))
+                    .map(e -> e.getKey())
+                    .orElse(-1);
+
+            comment("Tento konfigurační soubor byl vytvořen " +
+                    Utils.formatDate(LocalDate.now(), -1, ""));
+            newline();
+
+            if (defaultYear != -1) {
+                comment("Pokud u dat v tomto souboru není uveden rok, jedná se o rok " + defaultYear);
+                writeOption("rok", defaultYear);
+            }
             newline();
             comment("Datum začátku učení");
-            writeOption("začátek", config.beginning);
+            writeOption("začátek", Utils.formatDate(config.beginning, defaultYear, "nezadáno"));
             newline();
             writeWeightsConfig(config.weightsConfig);
             out.println("+++");
             newline();
-            config.classOptions.forEach(ConfigWriter::writeClassOptions);
+            comment("Globální parametry");
+            comment("Platí pro každý předmět, u kterého nejsou přepsány");
+            comment("Pro jejich vysvětlení viz README");
+            writeClassOptions(config.userDefaultOpts, Config.defaultClassOptions, false);
+            comment("Parametry specifické pro předměty");
+            config.classOptions.stream()
+                    .sorted(Comparator.comparing(opt -> opt.classInfo.name))
+                    .forEach(opt -> {
+                        writeClassInfo(opt.classInfo);
+                        writeClassOptions(opt, config.userDefaultOpts, true);
+                    });
+            return true;
         } catch (FileNotFoundException e) {
             System.out.println("Can't open file " + path);
+            return false;
         }
     }
 
@@ -48,19 +75,40 @@ public class ConfigWriter {
         newline();
     }
 
-    private static void writeClassOptions(ClassOptions opts) {
+    private static void writeClassInfo(ClassInfo info) {
+        out.printf("= %s (%s)\n", info.name, info.id.str);
+    }
+
+    private static void writeClassOptions(ClassOptions opts1, ClassOptions opts2, boolean writeStatus) {
+        List<String> exams1 = opts1.examDates.stream()
+                .sorted(Comparator.naturalOrder())
+                .map(d -> Utils.formatDate(d, defaultYear, "x"))
+                .collect(Collectors.toList());
+
+        List<String> exams2 = opts2.examDates.stream()
+                .sorted(Comparator.naturalOrder())
+                .map(d -> Utils.formatDate(d, defaultYear, "x"))
+                .collect(Collectors.toList());
+
+        Map<String, Object> optionMap1 = getOptionMap(exams1, opts1);
+        Map<String, Object> optionMap2 = getOptionMap(exams2, opts2);
+
+        optionMap1.forEach((opt, val) -> {
+            boolean condition = writeStatus ? opt.equals("status") || opt.equals("příprava") : false;
+            if (condition || !optionMap2.get(opt).equals(val)) {
+                writeOption(opt, val);
+            }
+        });
+
+        if (opts1.classInfo != null && opts1.classInfo.type == Type.COLLOQUIUM) {
+            writeFlag("zápočet");
+        }
+        if (opts1.ignore) { writeFlag("ignorovat"); }
+        newline();
+    }
+
+    private static Map<String, Object> getOptionMap(List<String> exams, ClassOptions opts) {
         WordFormatter days = new WordFormatter("dní", "den", "dny");
-
-        List<String> exams = opts.examDates.stream()
-                .sorted(Comparator.naturalOrder())
-                .map(ConfigWriter::formatDate)
-                .collect(Collectors.toList());
-
-        List<String> defaultExams = defOpts.examDates.stream()
-                .sorted(Comparator.naturalOrder())
-                .map(ConfigWriter::formatDate)
-                .collect(Collectors.toList());
-
         Map<String, Object> options = Map.of(
                 "kredity", opts.credits,
                 "status", opts.status.name(),
@@ -68,45 +116,12 @@ public class ConfigWriter {
                 "termíny", opts.backupTries,
                 "příprava", days.format(opts.idealPrepTime),
                 "minimum", days.format(opts.minPrepTime),
-                "datum", String.format("%s - %s", formatDate(opts.lowBound), formatDate(opts.highBound)),
+                "datum", String.format("%s - %s",
+                        Utils.formatDate(opts.lowBound, defaultYear, "x"),
+                        Utils.formatDate(opts.highBound, defaultYear, "x")),
                 "zkoušky", String.join(", ", exams)
         );
-
-        Map<String, Object> defaultOptions = Map.of(
-                "kredity", defOpts.credits,
-                "status", defOpts.status.name(),
-                "váha", defOpts.weight,
-                "termíny", defOpts.backupTries,
-                "příprava", days.format(defOpts.idealPrepTime),
-                "minimum", days.format(defOpts.minPrepTime),
-                "datum", String.format("%s - %s", formatDate(defOpts.lowBound), formatDate(defOpts.highBound)),
-                "zkoušky", String.join(", ", defaultExams)
-        );
-
-        if (opts == defOpts) {
-            comment("Následují globální nastavení, která platí plošně");
-            comment("pro každý předmět, u kterého nejsou přepsána");
-            comment("Pro jejich vysvětlení viz README.");
-
-            options.forEach(ConfigWriter::writeOption);
-        } else {
-            out.printf("= %s (%s)\n", opts.classInfo.name, opts.classInfo.id.str);
-            options.forEach((opt, val) -> {
-                if (!defaultOptions.get(opt).equals(val)) {
-                    writeOption(opt, val);
-                }
-            });
-        }
-
-        if (opts.classInfo != null && opts.classInfo.type == Type.COLLOQUIUM) { writeFlag("zápočet"); }
-        if (opts.ignore) { writeFlag("ignorovat"); }
-        newline();
-    }
-
-    private static String formatDate(LocalDate date) {
-        return date == null ?
-                "x" :
-                String.format("%d. %d. %d", date.getDayOfMonth(), date.getMonthValue(), date.getYear());
+        return options;
     }
 
     private static void writeOption(String name, Object value) {

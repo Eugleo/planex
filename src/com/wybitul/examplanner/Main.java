@@ -7,48 +7,92 @@ import java.util.stream.Stream;
 
 public class Main {
     private static Config config;
+    private static Scanner sc = new Scanner(System.in);
 
     static {
         System.loadLibrary("jniortools");
     }
 
-    // TODO Add text walkthrough (open existing (or if it doesn't work:) create new and save it)
     public static void main(String[] args) {
         if (args.length == 0) {
-            // TODO Add config saving
-            config = InteractiveConfigurator.startConfiguration();
+            System.out.println("Pokud již máte konfigurační soubor, zadejte cestu k němu. " +
+                    "Pokud ne, nezadávejte nic; spustí se interaktivní konfigurátor, který vás provede " +
+                    "vytvořením nového konfiguračního souboru.");
+            String line = sc.nextLine();
+
+            if (line.isEmpty()) {
+                config = createNewConfig();
+            } else {
+                config = loadConfigFromFile(line);
+            }
         } else {
-            Optional<Config> optConfig = ConfigParser.parse(args[0]);
-            optConfig.ifPresentOrElse(
-                    c -> config = c,
-                    () -> System.out.println("Unable to parse the configuration file.")
-            );
+            config = loadConfigFromFile(args[0]);
         }
 
         try {
             Model model = new Model(config);
             Solver solver = new Solver(model);
-            Set<Result> results = solver.solve(s -> System.out.println("Solution: " + s.toString()));
+            Set<Result> results = solver.solve(s -> System.out.printf("Řešení: %s\n\n", s.toString()));
             printResults(results);
         } catch (ModelException e) {
             System.out.println(e.getMessage());
         }
     }
 
+    private static Config loadConfigFromFile(String path) {
+        Optional<Config> optConfig = ConfigParser.parse(path);
+
+        while (optConfig.isEmpty()) {
+            System.out.println("Při čtení souboru se vyskytla chyba. Zadejte prosím cestu znovu, nebo " +
+                    "ponechte vstup prázdný pro spuštění interaktivního konfigurátoru.");
+            String line = sc.nextLine();
+            if (line.isEmpty()) {
+                return createNewConfig();
+            }
+            optConfig = ConfigParser.parse(line);
+        }
+
+        return optConfig.get();
+    }
+
+    private static Config createNewConfig() {
+        Config cfg = InteractiveConfigurator.startConfiguration();
+        System.out.println("Zadejte cestu, kam si přejete tento konfigurační soubor uložit:");
+        String path = sc.nextLine();
+
+        while (!ConfigWriter.write(cfg, path)) {
+            System.out.println("Ukládání souboru se nepovedlo. Zadejte prosím cestu znovu.");
+            path = sc.nextLine();
+        }
+
+        return cfg;
+    }
+
     private static void printResults(Collection<Result> results) {
-        Stream<Result> sorted = results.stream().sorted(Comparator.comparing(r -> r.examDate));
+        List<Result> sorted = results.stream()
+                .sorted(Comparator.comparing(r -> r.examDate))
+                .collect(Collectors.toList());
         WordFormatter days = new WordFormatter("dní", "den", "dny");
         WordFormatter tries = new WordFormatter("pokusů", "pokus", "pokusy");
 
         Matrix<Object> resultTable = new Matrix<>();
         Stream.of(
-                sorted.map(r -> r.classOptions.classInfo.name),
-                sorted.map(r -> r.start),
-                sorted.map(r -> r.examDate),
-                sorted.map(r -> String.format("%d/%s", r.prepTime, days.format(r.classOptions.idealPrepTime))),
-                sorted.map(r -> tries.format(r.backupTries))
+                sorted.stream().map(r -> r.classOptions.classInfo.name),
+                sorted.stream()
+                        .map(r -> r.start)
+                        .map(d -> Utils.formatDate(d, -1, "x")),
+                sorted.stream()
+                        .map(r -> r.examDate)
+                        .map(d -> Utils.formatDate(d, -1, "x")),
+                sorted.stream()
+                        .map(r -> {
+                            int dif = r.prepTime - r.classOptions.idealPrepTime;
+                            String difStr = dif > 0 ? "+" + dif : String.valueOf(dif);
+                            return String.format("%s (%s)", days.format(r.prepTime), difStr);
+                        }),
+                sorted.stream().map(r -> tries.format(r.backupTries))
         ).forEach(c -> resultTable.addColumn(c.collect(Collectors.toList())));
-        List<Object> header = List.of("předmět", "začátek přípravy", "termín zkoušky", "délka přípravy", "zbývá pokusů");
+        List<Object> header = List.of("předmět", "začátek přípravy", "termín zkoušky", "čas na přípravu" ,"zbývá pokusů");
         resultTable.addRow(0, header);
 
         printTable(resultTable);
@@ -77,6 +121,7 @@ public class Main {
                 }
                 System.out.printf(align + lengths.get(j) + formatBit, tableArray[i][j]);
             });
+            System.out.println();
         });
     }
 }

@@ -22,7 +22,7 @@ public class ClassInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ClassInfo classInfo = (ClassInfo) o;
-        return Objects.equals(id, classInfo.id) && type == classInfo.type;
+        return id.equals(classInfo.id) && type == classInfo.type;
     }
 
     @Override

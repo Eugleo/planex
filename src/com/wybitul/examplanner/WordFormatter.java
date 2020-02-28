@@ -1,23 +1,23 @@
 package com.wybitul.examplanner;
 
 public class WordFormatter {
-    String w04;
-    String w1;
-    String wRest;
+    String zeroAndFivePlus;
+    String one;
+    String twoToFive;
 
-    public WordFormatter(String w04, String w1, String wRest) {
-        this.w04 = w04;
-        this.w1 = w1;
-        this.wRest = wRest;
+    public WordFormatter(String zeroAndFivePlus, String one, String twoToFive) {
+        this.zeroAndFivePlus = zeroAndFivePlus;
+        this.one = one;
+        this.twoToFive = twoToFive;
     }
 
     public String format(int i) {
         if (i == 0 || i > 4) {
-            return w04;
+            return i + " " + zeroAndFivePlus;
         } else if (i == 1) {
-            return w1;
+            return i + " " + one;
         } else {
-            return wRest;
+            return i + " " + twoToFive;
         }
     }
 }
