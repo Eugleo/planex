@@ -53,7 +53,7 @@ public class ConfigParser {
                 ClassOptions classOpts = parseClassOptions(currentClassBuilder);
                 if (buildingDefault) {
                     buildingDefault = false;
-                    configBuilder.setUserDefaultOpts(classOpts);
+                    configBuilder.setGlobalClassOptions(classOpts);
                 } else {
                     configBuilder.addClassOptions(classOpts);
                 }
@@ -61,7 +61,7 @@ public class ConfigParser {
                 if (sc.peekNextLine() != null && sc.peekNextLine().startsWith("=")) {
                     currentClassBuilder = new ClassOptions.Builder(
                             parseClass(sc.nextLine()),
-                            configBuilder.userDefaultOpts,
+                            configBuilder.globalClassOptions,
                             defaultYear
                     );
                 }

@@ -15,6 +15,7 @@ public class CreditDownloader {
     private static final String sisURL = "https://is.cuni.cz/studium/predmety/index.php?do=predmet&kod=";
 
     // ADAM jak se zbavit warningu o unchecked castu?
+    // Mám pocit, že mi to ukládání nějak nefunguje
     static {
         try (FileInputStream fis = new FileInputStream(new File(pathToMap));
              ObjectInputStream ois = new ObjectInputStream(fis)) {

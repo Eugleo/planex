@@ -2,7 +2,8 @@ package com.wybitul.examplanner;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class InteractiveConfigurator {
@@ -10,204 +11,338 @@ public class InteractiveConfigurator {
     private static final Scanner sc = new Scanner(System.in);
     private static int defaultYear = -1;
 
+    private static Set<ID> creditsDownloaded = new HashSet<>();
+    private static Set<ID> statusDownloaded = new HashSet<>();
+
     private InteractiveConfigurator() { }
 
+    // TODO Set detail
+    // ADAM Kdybych chtěl ty zprávy ve více jazycích, musel bych je mít uložené v nějakém objektu
+    // a používat je jako msg(o.welcome), msg(o.settings) atd, nebo je nějaký lepší způsob?
     public static Config startConfiguration() {
-        Map<ClassInfo, Set<LocalDate>> classExamDates = getClassExamDates();
-        Set<ClassInfo> classInfo = classExamDates.keySet();
+        section("Úvodní nastavení");
 
-        header("Obecná nastavení");
+        Map<ClassInfo, Set<LocalDate>> classExamDates = getClassExamDates();
+
+        section("Obecná nastavení");
 
         defaultYear = getDefaultYear();
 
         msg("Od kdy se můžete začít učit?");
         configBuilder.setBeginning(getDate());
-        configBuilder.setWeightsConfig(getWeightsConfig());
-        configBuilder.setUserDefaultOpts(getDefaultClassOptions());
 
-        Set<ClassOptions.Builder> classBuilders = classInfo.stream()
-                .map(c -> new ClassOptions.Builder(c, configBuilder.userDefaultOpts, defaultYear))
+        configBuilder.setWeightsConfig(Config.defaultWeightsConfig); // getWeightsConfig()
+        configBuilder.setGlobalClassOptions(getGlobalClassOptions());
+
+        Set<ClassOptions.Builder> classBuilders = classExamDates.keySet().stream()
+                .map(c -> new ClassOptions.Builder(c, configBuilder.globalClassOptions, defaultYear))
                 .collect(Collectors.toSet());
 
-        classBuilders.forEach(b -> b.setExamDates(classExamDates.getOrDefault(b.classInfo, new HashSet<>())));
+        section("Nastavení jednotlivých předmětů");
 
-        optionallyDownloadCredits(classBuilders, classInfo);
+        classBuilders.forEach(b -> b.setExamDates(classExamDates.getOrDefault(b.classInfo, new HashSet<>())));
+        optionallyParseCreditsAndStatus(classBuilders);
         classBuilders.forEach(b -> configBuilder.addClassOptions(getClassOptions(b)));
 
         return configBuilder.createConfig();
     }
 
+    private static Map<ClassInfo, Set<LocalDate>> getClassExamDates() {
+        header("Nastavení termínů zkoušek");
+
+        msg("Stáhněte si prosím ze SISu xlsx tabulku s termíny zkoušek (návod můžete najít v README).");
+        return ask("zadejte prosím cestu k platnému xlsx souboru", ClassParser::parse);
+    }
+
     private static int getDefaultYear() {
         msg("V průběhu konfigurace budete často zadávat různá data.",
-                "Abyste si ušetřili čas s jejich psaním, zadejte prosím rok (ve formátu YYYY),",
+                "Abyste si ušetřili čas s jejich psaním, zadejte prosím rok",
                 "který bude automaticky přidán ke každému datu bez specifikovaného roku.");
 
-        Integer result = Utils.safeParseInt(sc.nextLine());
-        while (result == null || result < 2000 || result > 2999) {
-            msg("Prosím vložte čtyřmístné číslo mezi 2000 a 2999.");
-            result = Utils.safeParseInt(sc.nextLine());
-        }
-
-        newline();
-        return result;
-    }
-
-    private static void optionallyDownloadCredits(Set<ClassOptions.Builder> builders, Set<ClassInfo> classInfo) {
-        msg("Chcete nechat ze SISu stáhnout kreditové ohodnocení vašich předmětů? (a)no/(n)e");
-        String rsp = sc.nextLine();
-        while (!rsp.toLowerCase().equals("a") && !rsp.toLowerCase().equals("n")) {
-            msg("Odpovězte prosím pouze \"a\" nebo \"n\".");
-            rsp = sc.nextLine();
-        }
-
-        // Set credits to be equal to the downloaded ones
-        if (rsp.equals("a")) {
-            msg("Chvilku strpení, stahuji informaci o kreditech...");
-            List<ID> ids = classInfo.stream().map(info -> info.id).collect(Collectors.toList());
-            HashMap<ID, Integer> creditMap = CreditDownloader.getCredits(ids);
-            builders.forEach(b -> {
-                if (creditMap.containsKey(b.classInfo.id)) {
-                    b.setCredits(creditMap.get(b.classInfo.id));
-                }
-            });
-            msg("Hotovo");
-        }
-
-        newline();
-    }
-
-    private static ClassOptions getDefaultClassOptions() {
-        header("Nastavení výchozích parametrů");
-        msg("Nyní nastavíme výchozí parametry pro všechny předměty",
-                "(pro každý předmět zvlášť pak půjdou přepsat).",
-                "Pro detailní popis jednotlivých vlastností viz README.",
-                "Pokročilé vlastnosti mohou být nastaveny ručně v konfiguračním souboru.");
-
-        var b = new ClassOptions.Builder(configBuilder.userDefaultOpts, defaultYear);
-
-        String m1 = "Jaký je výchozí počet náhradních termínů, které chcete nechat?";
-        return getBasicClassOptions(b, m1, "Jaká má být výchozí váha předmětu?");
-    }
-
-    private static void ask(String message, String def, Consumer<String> action) {
-        msg(String.format("%s [ENTER pro výchozí: %s]", message, def));
-        String input = sc.nextLine();
-        if (input.isEmpty()) {
-            msg(String.format("(nastaveno: %s)", def));
-            action.accept(def);
-        } else {
-            try {
-                action.accept(input);
-            } catch (Exception e) {
-                msg(String.format("Byla zadána nesprávná hodnota. Místo ní bude použita výchozí: %s.", def));
-                action.accept(def);
-            }
-        }
-        newline();
-    }
-
-    private static ClassOptions getClassOptions(ClassOptions.Builder b) {
-        header("Nastavení předmětu", b.classInfo.name);
-
-        ask("Jaký status (P/PVP/V) má předmět?", configBuilder.userDefaultOpts.status.toString(), s -> {
-            switch (s.toLowerCase()) {
-                case "p":
-                    b.setStatus(Status.P);
-                    break;
-                case "pvp":
-                    b.setStatus(Status.PVP);
-                    break;
-                case "v":
-                    b.setStatus(Status.V);
-                    break;
-            }
-        });
-
-        ask("Kolik kreditů je za tento předmět?",
-                String.valueOf(b.credits),
-                n -> b.setCredits(Integer.parseInt(n)));
-
-        ask("Kolik dní byste v ideálním případě chtěli mít na přípravu na tento předmět?",
-                String.valueOf(configBuilder.userDefaultOpts.idealPrepTime),
-                n -> b.setIdealPrepTime(Integer.parseInt(n)));
-
-        String m1 = "Kolik chcete nechat náhradních termínů?";
-        return getBasicClassOptions(b, m1, "Jaká má být váha tohoto předmětu?");
-    }
-
-    private static ClassOptions getBasicClassOptions(ClassOptions.Builder b, String m1, String m2) {
-        ask(m1, String.valueOf(configBuilder.userDefaultOpts.backupTries), n -> b.setBackupTries(Integer.parseInt(n)));
-        ask(m2, String.valueOf(configBuilder.userDefaultOpts.weight), n -> b.setWeight(Integer.parseInt(n)));
-
-        return b.createClassOptions();
-    }
-
-    private static LocalDate getDate() {
-        msg("Zadejte prosím datum ve formátu \"den. měsíc. [rok]?\".");
-        Optional<LocalDate> result = Utils.parseDate(sc.nextLine(), defaultYear);
-        while (result.isEmpty()) {
-            msg("Zadejte prosím datum ve formátu \"den. měsíc. [rok]?\".");
-            result = Utils.parseDate(sc.nextLine(), defaultYear);
-        }
-        newline();
-        return result.get();
+        return ask(
+                "zadejte celé číslo mezi 2000 a 3000",
+                Integer::parseInt,
+                i -> 2000 <= i && i <= 3000
+        );
     }
 
     private static WeightsConfig getWeightsConfig() {
+        header("Nastavení výpočtu důležitosti předmětu");
+
         WeightsConfig.Builder b = new WeightsConfig.Builder();
         msg("Předmětům je přidělován čas na přípravu úměrně k jejich důležitosti.",
                 "Důležitost předmětu je vypočítána jako: v * váha + s * st(status) + k * kredity,",
                 "kde váha, status (P/PVP/V) a kredity jsou vlastnosti předmětu a v, s, st, k jsou,",
                 "globální parametry.");
 
+        newline();
+
         String fmt = "Jakou hodnotu chcete aby měl parametr u %s (%s)?";
 
-        ask(String.format(fmt, "váhy", "v"),
-                String.valueOf(Config.defaultWeightsConfig.w),
-                n -> b.setWeight(Integer.parseInt(n)));
-        ask(String.format(fmt, "statusu", "s"),
-                String.valueOf(Config.defaultWeightsConfig.s),
-                n -> b.setStatus(Integer.parseInt(n)));
-        ask(String.format(fmt, "kreditů", "k"),
-                String.valueOf(Config.defaultWeightsConfig.c),
-                n -> b.setCredit(Integer.parseInt(n)));
+        msg(String.format(fmt, "váhy", "v"));
+        b.setWeight(getPositiveNumber(Config.defaultWeightsConfig.w));
 
-        msg("Nyní nastavíme funkci st, která přiřazuje číslo statusu předmětu (P/PVP/V).");
+        msg(String.format(fmt, "statusu", "s"));
+        b.setStatus(getPositiveNumber(Config.defaultWeightsConfig.s));
+
+        msg(String.format(fmt, "kreditů", "k"));
+        b.setCredit(getPositiveNumber(Config.defaultWeightsConfig.c));
+
+        header("Nastavení statusové funkce (st)");
 
         String fmt2 = "Zadejte prosím hodnotu pro %s předměty.";
 
-        StatusFunction st = new StatusFunction(0, 0, 0);
-        ask(String.format(fmt2, "povinné"),
-                String.valueOf(Config.defaultWeightsConfig.st.apply(Status.P)),
-                n -> st.p = Integer.parseInt(n));
-        ask(String.format(fmt2, "povinně volitelné"),
-                String.valueOf(Config.defaultWeightsConfig.st.apply(Status.PVP)),
-                n -> st.pvp = Integer.parseInt(n));
-        ask(String.format(fmt2, "volitelné"),
-                String.valueOf(Config.defaultWeightsConfig.st.apply(Status.V)),
-                n -> st.v = Integer.parseInt(n));
+        msg(String.format(fmt2, "povinné"));
+        int p = getNumber(Config.defaultWeightsConfig.st.apply(Status.P));
 
-        b.setStatusFunction(st);
-        return b.createWeightsConfig();
+        msg(String.format(fmt2, "povinně volitelné"));
+        int pvp = getNumber(Config.defaultWeightsConfig.st.apply(Status.PVP));
+
+        msg(String.format(fmt2, "volitelné"));
+        int v = getNumber(Config.defaultWeightsConfig.st.apply(Status.V));
+
+        return b.setStatusFunction(new StatusFunction(p, pvp, v)).createWeightsConfig();
     }
 
-    private static Map<ClassInfo, Set<LocalDate>> getClassExamDates() {
-        header("Úvodní nastavení");
+    private static void optionallyParseCreditsAndStatus(Set<ClassOptions.Builder> builders) {
+        header("Automatické předvyplnění údajů");
 
-        msg("Stáhněte si prosím ze SISu xlsx tabulku s termíny zkoušek (návod můžete najít v README).",
-                "Až ji budete mít staženou, zadejte prosím cestu k ní:");
-        String path = sc.nextLine();
-        var result = ClassParser.parse(path);
+        msg("Doporučujeme vám stáhnout stránku ze SISu nazvanou \"Zápis předmětů a rozvrhu\",",
+                "s její pomocí totiž budeme schopní vyplnit spoustu informací o předmětech automaticky",
+                "(jinak byste je museli vypisovat ručně).");
 
-        while (result.isEmpty()) {
-            msg("Někde se stala chyba. Překontrolujte prosím cestu a zadejte ji znovu.");
-            path = sc.nextLine();
-            result = ClassParser.parse(path);
+        Optional<CreditsAndStatusParser> parserOpt = ask(
+                "zadejte cestu k platnému html souboru",
+                p -> CreditsAndStatusParser.makeParser(p),
+                Optional::isPresent,
+                Optional.empty(),
+                "přeskočit tento krok"
+        );
+
+        if (parserOpt.isEmpty()) {
+            optionallyDownloadCredits(builders);
+            return;
         }
+
+        var parser = parserOpt.get();
+        var credits = parser.getCreditsMap();
+        var statuses = parser.getStatusesMap();
+        creditsDownloaded.addAll(credits.keySet());
+        statusDownloaded.addAll(statuses.keySet());
+        builders.forEach(b -> {
+            ID id = b.classInfo.id;
+            if (credits.containsKey(id)) { b.setCredits(credits.get(id)); }
+            if (statuses.containsKey(id)) { b.setStatus(statuses.get(id)); }
+        });
+    }
+
+    private static Optional<Boolean> parseBoolean(String s) {
+        switch (s.toLowerCase()) {
+            case "a":
+                return Optional.of(Boolean.TRUE);
+            case "n":
+                return Optional.of(Boolean.FALSE);
+            default:
+                return Optional.empty();
+        }
+    }
+
+    private static void optionallyDownloadCredits(Set<ClassOptions.Builder> builders) {
+        msg("Chcete alespoň nechat ze SISu stáhnout kreditové ohodnocení jednotlivých předmětů?");
+
+        Boolean shouldDownload = ask(
+                "Odpovězte prosím \"a\" nebo \"n\".",
+                InteractiveConfigurator::parseBoolean
+        );
+
+        // Set credits to be equal to the downloaded ones
+        if (shouldDownload) {
+            List<ID> ids = builders.stream()
+                    .map(b -> b.classInfo.id)
+                    .collect(Collectors.toList());
+
+            msg("Chvilku strpení, stahuji informaci o kreditech...");
+            HashMap<ID, Integer> creditMap = CreditDownloader.getCredits(ids);
+            builders.forEach(b -> {
+                ID id = b.classInfo.id;
+                if (creditMap.containsKey(id)) { b.setCredits(creditMap.get(id)); }
+            });
+            msg("Hotovo");
+        }
+        newline();
+    }
+
+    private static ClassOptions getGlobalClassOptions() {
+        header("Nastavení globálních parametrů");
+
+        msg("Nyní nastavíme globální parametry (pro každý předmět zvlášť pak půjdou přepsat).",
+                "Pro detailní popis jednotlivých parametrů viz README.",
+                "Pokročilé parametry mohou být nastaveny ručně v konfiguračním souboru.");
+
+        var b = new ClassOptions.Builder(configBuilder.globalClassOptions, defaultYear);
 
         newline();
 
-        return result.get();
+        msg("Kolik chcete nechat náhradních termínů?");
+        b.setBackupTries(getPositiveNumber(configBuilder.globalClassOptions.backupTries));
+
+        msg("Jaká chcete aby byla výchozí váha předmětu?");
+        b.setWeight(getNumber(configBuilder.globalClassOptions.weight));
+
+        msg("Kdy nejdříve můžete dělat zkoušku?");
+        Optional<LocalDate> lowBound = ask(
+                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
+                s -> Utils.parseDate(s, defaultYear),
+                Optional::isPresent,
+                Optional.empty(),
+                "bez omezení"
+        );
+
+        msg("Kdy nejpozději můžete dělat zkoušku?");
+        Optional<LocalDate> highBound = ask(
+                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
+                s -> Utils.parseDate(s, defaultYear),
+                Optional::isPresent,
+                Optional.empty(),
+                "bez omezení"
+        );
+
+        return b.setLowBound(lowBound).setHighBound(highBound).createClassOptions();
+    }
+
+    private static ClassOptions getClassOptions(ClassOptions.Builder b) {
+        header("Nastavení předmětu", b.classInfo.name);
+
+        msg("Kolik dní byste v ideálním případě chtěli mít na přípravu na tento předmět?");
+        b.setIdealPrepTime(getPositiveNumber(configBuilder.globalClassOptions.idealPrepTime));
+
+        msg("Kolik chcete nechat náhradních termínů?");
+        b.setBackupTries(getPositiveNumber(configBuilder.globalClassOptions.backupTries));
+
+        if (!creditsDownloaded.contains(b.classInfo.id)) {
+            msg("Kolik kreditů je za tento předmět?");
+            b.setCredits(getPositiveNumber(b.credits));
+        }
+
+        if (!statusDownloaded.contains(b.classInfo.id)) {
+            msg("Je tento předmět povinný, povinně volitelný nebo volitelný?");
+            Status status = ask(
+                    "Zadejte P, PVP nebo V.",
+                    s -> Status.valueOf(s.toUpperCase()),
+                    i -> true,
+                    configBuilder.globalClassOptions.status
+            );
+            b.setStatus(status);
+        }
+
+        msg("Jakou váhu chcete přiřadit tomuto předmětu?");
+        b.setWeight(getNumber(configBuilder.globalClassOptions.weight));
+
+        return b.createClassOptions();
+    }
+
+    private static LocalDate getDate() {
+        return ask(
+                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
+                s -> Utils.parseDate(s, defaultYear)
+        );
+    }
+
+    private static LocalDate getDate(LocalDate def, String defDescription) {
+        return ask(
+                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
+                s -> Utils.parseDate(s, defaultYear),
+                def,
+                defDescription
+        );
+    }
+
+    private static int getNumber(int def) {
+        return ask(
+                "zadejte prosím celé číslo",
+                Integer::parseInt,
+                i -> true,
+                def
+        );
+    }
+
+    private static int getPositiveNumber(int def) {
+        return ask(
+                "zadejte prosím celé nezáporné číslo",
+                Integer::parseInt,
+                i -> i >= 0,
+                def
+        );
+    }
+
+    // `ask` with the predicate automatically set to Optional::isPresent, because `trans` returns optional,
+    // and a default value if the user enters ""
+    private static <T> T ask(String spec, Function<String, T> trans, Predicate<T> pred, T def) {
+        return ask(spec, trans, pred, def, String.valueOf(def));
+    }
+
+    // `ask` with the predicate automatically set to Optional::isPresent, because `trans` returns optional,
+    // and a default value if the user enters ""
+    private static <T> T ask(String spec, Function<String, Optional<T>> trans, T def, String defStr) {
+        return ask(spec, trans, Optional::isPresent, Optional.of(def), defStr).get();
+    }
+
+    // `ask` with the predicate automatically set to Optional::isPresent, because `trans` returns optional
+    private static <T> T ask(String spec, Function<String, Optional<T>> trans) {
+        return ask(spec, trans, Optional::isPresent).get();
+    }
+
+    // `ask` with a default value if user enters ""
+    // ADAM Jak správně formátovat víceřádkovou deklaraci?
+    private static <T> T ask(String spec, Function<String, T> trans,
+                             Predicate<T> pred, T def, String defString) {
+        Optional<T> result = ask(
+                String.format("%s, nebo pro zachování výchozí hodnoty (%s) nechte vstup prázdný", spec, defString),
+                s -> s.isEmpty() ? Optional.empty() : Optional.of(trans.apply(s)),
+                t -> t.isEmpty() || pred.test(t.get()),
+                false
+        );
+
+        if (result.isEmpty()) { msg(String.format("(nastaveno: %s)", defString)); }
+        newline();
+
+        return result.orElse(def);
+    }
+
+    // `ask` with newline after it
+    private static <T> T ask(String spec, Function<String, T> trans, Predicate<T> pred) {
+        return ask(spec, trans, pred, true);
+    }
+
+    // Ask the user to enter information according to `spec`, transform in to T with `trans`,
+    // and check it with the predicate `pred`
+    // If `trans` fails or `pred` returns false, ask the user to enter the information again
+    private static <T> T ask(String spec, Function<String, T> trans, Predicate<T> pred, boolean newline) {
+        T tInput = null;
+        String input;
+        boolean test = false;
+
+        msg(String.format("[%s]", spec));
+        while (tInput == null || !test) {
+            input = sc.nextLine();
+            try {
+                tInput = trans.apply(input);
+                test = pred.test(tInput);
+                if (!test) { msg(String.format("Nesprávný vstup, %s.", spec)); }
+            } catch (Exception e) {
+                msg(String.format("Nesprávný vstup, %s.", spec));
+            }
+        }
+
+        if (newline) { newline(); }
+        return tInput;
+    }
+
+    private static void section(String ...messages) {
+        String text = String.join(" ", messages);
+        msg(text);
+        msg("=".repeat(text.length()));
+        newline();
     }
 
     private static void header(String ...messages) {

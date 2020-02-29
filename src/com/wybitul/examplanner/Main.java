@@ -12,6 +12,7 @@ public class Main {
         System.loadLibrary("jniortools");
     }
 
+    // TODO Refactor dialogs
     public static void main(String[] args) {
         Config config;
         if (args.length == 0) {
@@ -57,12 +58,16 @@ public class Main {
 
     private static Config createNewConfig() {
         Config cfg = InteractiveConfigurator.startConfiguration();
-        System.out.println("Zadejte cestu, kam si přejete tento konfigurační soubor uložit:");
-        String path = sc.nextLine();
+        System.out.println("Zadejte cestu, kam si přejete tento konfigurační soubor uložit.");
 
-        while (!ConfigWriter.write(cfg, path)) {
-            System.out.println("Ukládání souboru se nepovedlo. Zadejte prosím cestu znovu.");
-            path = sc.nextLine();
+        boolean writeSuccessful = false;
+        while (!writeSuccessful) {
+            String path = sc.nextLine();
+            try {
+                writeSuccessful = ConfigWriter.write(cfg, path);
+            } catch (Exception e) {
+                System.out.println("Ukládání souboru se nepovedlo. Zadejte prosím cestu znovu.");
+            }
         }
 
         return cfg;
@@ -80,10 +85,10 @@ public class Main {
                 sorted.stream().map(r -> r.classOptions.classInfo.name),
                 sorted.stream()
                         .map(r -> r.start)
-                        .map(d -> Utils.formatDate(d, -1, "x")),
+                        .map(d -> Utils.formatDate(d, -1)),
                 sorted.stream()
                         .map(r -> r.examDate)
-                        .map(d -> Utils.formatDate(d, -1, "x")),
+                        .map(d -> Utils.formatDate(d, -1)),
                 sorted.stream()
                         .map(r -> {
                             int dif = r.prepTime - r.classOptions.idealPrepTime;
@@ -92,9 +97,16 @@ public class Main {
                         }),
                 sorted.stream().map(r -> tries.format(r.backupTries))
         ).forEach(c -> resultTable.addColumn(c.collect(Collectors.toList())));
-        List<Object> header = List.of("předmět", "začátek přípravy", "termín zkoušky", "čas na přípravu" ,"zbývá pokusů");
-        resultTable.addRow(0, header);
 
+        List<Object> header = List.of(
+                "předmět",
+                "začátek přípravy",
+                "termín zkoušky",
+                "čas na přípravu",
+                "zbývá pokusů"
+        );
+
+        resultTable.addRow(0, header);
         printTable(resultTable);
     }
 

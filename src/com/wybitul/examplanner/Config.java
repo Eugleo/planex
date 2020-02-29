@@ -12,8 +12,8 @@ public class Config {
     public static final WeightsConfig defaultWeightsConfig =
             new WeightsConfig(new StatusFunction(3, 2, 1), 1, 1, 1);
     public static final ClassOptions defaultClassOptions = new ClassOptions(
-            null, Status.V, 0, 0, 1, 0, 0,
-            false, null, null, new HashSet<>()
+            null, Status.P, 0, 0, 3, 0, 0,
+            false, Optional.empty(), Optional.empty(), new HashSet<>()
     );
 
     public Config(LocalDate beginning, ClassOptions userDefaultOpts,
@@ -27,7 +27,7 @@ public class Config {
     @SuppressWarnings("UnusedReturnValue")
     static class Builder extends OptionParser {
         private LocalDate beginning;
-        ClassOptions userDefaultOpts = Config.defaultClassOptions;
+        ClassOptions globalClassOptions = Config.defaultClassOptions;
         private final Set<ClassOptions> classOptions = new HashSet<>();
         private WeightsConfig weightsConfig;
         int defaultYear;
@@ -56,13 +56,13 @@ public class Config {
             return this;
         }
 
-        public Builder setUserDefaultOpts(ClassOptions classOptions) {
-            this.userDefaultOpts = classOptions;
+        public Builder setGlobalClassOptions(ClassOptions classOptions) {
+            this.globalClassOptions = classOptions;
             return this;
         }
 
         public Config createConfig() {
-            return new Config(beginning, userDefaultOpts, classOptions, weightsConfig);
+            return new Config(beginning, globalClassOptions, classOptions, weightsConfig);
         }
     }
 }

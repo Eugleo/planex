@@ -29,7 +29,7 @@ public class ConfigWriter {
                     .orElse(-1);
 
             comment("Tento konfigurační soubor byl vytvořen " +
-                    Utils.formatDate(LocalDate.now(), -1, ""));
+                    Utils.formatDate(LocalDate.now(), -1));
             newline();
 
             if (defaultYear != -1) {
@@ -38,7 +38,7 @@ public class ConfigWriter {
             }
             newline();
             comment("Datum začátku učení");
-            writeOption("začátek", Utils.formatDate(config.beginning, defaultYear, "nezadáno"));
+            writeOption("začátek", Utils.formatDate(config.beginning, defaultYear));
             newline();
             writeWeightsConfig(config.weightsConfig);
             out.println("+++");
@@ -82,12 +82,12 @@ public class ConfigWriter {
     private static void writeClassOptions(ClassOptions opts1, ClassOptions opts2, boolean isSpecificClass) {
         List<String> exams1 = opts1.examDates.stream()
                 .sorted(Comparator.naturalOrder())
-                .map(d -> Utils.formatDate(d, defaultYear, "x"))
+                .map(d -> Utils.formatDate(d, defaultYear))
                 .collect(Collectors.toList());
 
         List<String> exams2 = opts2.examDates.stream()
                 .sorted(Comparator.naturalOrder())
-                .map(d -> Utils.formatDate(d, defaultYear, "x"))
+                .map(d -> Utils.formatDate(d, defaultYear))
                 .collect(Collectors.toList());
 
         Map<String, Object> optionMap1 = getOptionMap(exams1, opts1);
@@ -118,8 +118,8 @@ public class ConfigWriter {
                 "příprava", days.format(opts.idealPrepTime),
                 "minimum", days.format(opts.minPrepTime),
                 "datum", String.format("%s - %s",
-                        Utils.formatDate(opts.lowBound, defaultYear, "x"),
-                        Utils.formatDate(opts.highBound, defaultYear, "x")),
+                        opts.lowBound.map(d -> Utils.formatDate(d, defaultYear)).orElse("x"),
+                        opts.highBound.map(d -> Utils.formatDate(d, defaultYear)).orElse("x")),
                 "zkoušky", String.join(", ", exams)
         );
     }

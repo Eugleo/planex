@@ -8,30 +8,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-enum Status {
-    P, PVP, V
-}
-
-@SuppressWarnings("UnusedReturnValue")
+@SuppressWarnings({"UnusedReturnValue", "OptionalUsedAsFieldOrParameterType"})
 public class ClassOptions {
     final ClassInfo classInfo;
-
     final Status status;
     final int idealPrepTime;
     final int minPrepTime;
     final int weight;
     final int credits;
     final int backupTries;
-
-    final LocalDate lowBound;
-    final LocalDate highBound;
-
+    final Optional<LocalDate> lowBound;
+    final Optional<LocalDate> highBound;
     final Set<LocalDate> examDates;
 
     final boolean ignore;
 
     ClassOptions(ClassInfo classInfo, Status status, int idealPrepTime, int minPrepTime, int weight, int credits,
-                 int backupTries, boolean ignore, LocalDate lowBound, LocalDate highBound,
+                 int backupTries, boolean ignore, Optional<LocalDate> lowBound, Optional<LocalDate> highBound,
                  Set<LocalDate> examDates) {
         this.classInfo = classInfo;
         this.status = status;
@@ -59,8 +52,8 @@ public class ClassOptions {
         int credits;
         int defaultYear;
         private int backupTries;
-        private LocalDate lowBound;
-        private LocalDate highBound;
+        private Optional<LocalDate> lowBound;
+        private Optional<LocalDate> highBound;
         private boolean ignore = false;
         private Set<LocalDate> examDates;
 
@@ -73,8 +66,8 @@ public class ClassOptions {
 
                 if (!generalM.find()) { throw new IncorrectConfigFileException("Incorrect date range format"); }
 
-                setLowBound(Utils.parseDate(generalM.group(1), defaultYear).orElse(null));
-                setHighBound(Utils.parseDate(generalM.group(2), defaultYear).orElse(null));
+                setLowBound(Utils.parseDate(generalM.group(1), defaultYear));
+                setHighBound(Utils.parseDate(generalM.group(2), defaultYear));
             });
 
             addOption("příprava", value -> {
@@ -188,12 +181,12 @@ public class ClassOptions {
             return this;
         }
 
-        public Builder setLowBound(LocalDate lowBound) {
+        public Builder setLowBound(Optional<LocalDate> lowBound) {
             this.lowBound = lowBound;
             return this;
         }
 
-        public Builder setHighBound(LocalDate highBound) {
+        public Builder setHighBound(Optional<LocalDate> highBound) {
             this.highBound = highBound;
             return this;
         }

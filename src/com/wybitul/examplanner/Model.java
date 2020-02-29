@@ -19,8 +19,11 @@ public class Model {
 
     Model(Config config) throws ModelException {
         this.beginning = config.beginning;
+        List<ClassOptions> classOptions = config.classOptions.stream()
+                .filter(opt -> !opt.ignore)
+                .collect(Collectors.toList());
 
-        LocalDate lastDate = config.classOptions.stream()
+        LocalDate lastDate = classOptions.stream()
                 .flatMap(c -> c.examDates.stream())
                 .max(Comparator.naturalOrder())
                 .orElseThrow(() -> new ModelException("Can't find last exam date. Are there any exams?"));
@@ -31,7 +34,7 @@ public class Model {
         IntVar zero = model.newConstant(0);
         IntVar one = model.newConstant(1);
 
-        for (ClassOptions classOpts: config.classOptions) {
+        for (ClassOptions classOpts: classOptions) {
             // Each interval denotes the learning/preparation period for an exam
             // i.e. the end of each interval has to be before some exam
             int[][] endDays = getEndDays(classOpts, beginning);
@@ -54,15 +57,8 @@ public class Model {
             IntVar minPrepTime = model.newConstant(classOpts.minPrepTime);
             model.addGreaterOrEqual(prepTime, minPrepTime);
 
-            if (classOpts.lowBound != null) {
-                long day = ChronoUnit.DAYS.between(beginning, classOpts.lowBound);
-                model.addGreaterOrEqual(end, day);
-            }
-
-            if (classOpts.highBound != null) {
-                long day = ChronoUnit.DAYS.between(beginning, classOpts.highBound);
-                model.addLessOrEqual(end, day);
-            }
+            classOpts.lowBound.ifPresent(d -> model.addGreaterOrEqual(end, ChronoUnit.DAYS.between(beginning, d)));
+            classOpts.highBound.ifPresent(d -> model.addLessOrEqual(end, ChronoUnit.DAYS.between(beginning, d)));
 
             // backupTries is the number of backup exam dates (i.e. if the exam needs to be done again)
             IntVar backupTries = model.newIntVar(0, classOpts.examDates.size(), name + "backupTries");
