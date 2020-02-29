@@ -15,17 +15,7 @@ public class Main {
         Config config;
         if (args.length > 0) {
             config = ConfigParser.parse(args[0])
-                    .map(c -> {
-                        Asker.msg("Chtěli byste tento konfigurační soubor dále upravit",
-                                "v interaktivním konfigurátoru?");
-                        Boolean shouldEdit = Asker.ask(
-                                "odpovězte prosím \"a\" nebo \"n\"",
-                                Utils::parseBoolean,
-                                false,
-                                "neupravovat"
-                        );
-                        return shouldEdit ? editConfigInConfigurator(c) : c;
-                    })
+                    .map(Main::maybeEditConfig)
                     .orElseGet(() -> {
                         Asker.msg("Soubor se nepodařilo načíst. Zkuste prosím zadat cestu znovu.");
                         return getConfig();
@@ -45,12 +35,26 @@ public class Main {
         }
     }
 
+    private static Config maybeEditConfig(Config c) {
+        Asker.msg("Chtěli byste tento konfigurační soubor dále upravit",
+                "v interaktivním konfigurátoru?");
+        Boolean shouldEdit = Asker.ask(
+                "odpovězte prosím \"a\" nebo \"n\"",
+                Utils::parseBoolean,
+                false,
+                "neupravovat"
+        );
+        return shouldEdit ? editConfigInConfigurator(c) : c;
+    }
+
     private static Config getConfig() {
         return Asker.ask(
                 "zadejte cestu ke konfiguračnímu souboru",
                 ConfigParser::parse,
                 "vytvořit nový konfigurační soubor"
-        ).orElseGet(Main::newConfig);
+        )
+                .map(Main::maybeEditConfig)
+                .orElseGet(Main::newConfig);
     }
 
     private static Config newConfig() {
