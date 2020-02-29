@@ -3,6 +3,7 @@ package com.wybitul.examplanner;
 import com.google.ortools.sat.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -19,7 +20,9 @@ public class Solver {
 
     public Set<Result> solve(Consumer<CpSolverStatus> statusConsumer) {
         CpSolverStatus status = solver.solve(model.model);
+
         if (statusConsumer != null) { statusConsumer.accept(status); }
+        if (status != CpSolverStatus.OPTIMAL && status != CpSolverStatus.FEASIBLE) { return new HashSet<>(); }
 
         return model.classModels.stream()
                 .map(cm -> new Result(cm.classOptions, varToDate(cm.end), varToDate(cm.start).plusDays(1),

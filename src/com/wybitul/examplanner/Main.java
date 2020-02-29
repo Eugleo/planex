@@ -76,6 +76,8 @@ public class Main {
     }
 
     private static void printResults(Collection<Result> results) {
+        if (results.size() == 0) { return; }
+
         List<Result> sorted = results.stream()
                 .sorted(Comparator.comparing(r -> r.examDate))
                 .collect(Collectors.toList());

@@ -1,6 +1,5 @@
 package com.wybitul.examplanner;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -50,14 +49,6 @@ public class Utils {
                 return Optional.of(false);
             default:
                 return Optional.empty();
-        }
-    }
-
-    public static Optional<Integer> parseInteger(String s) {
-        try {
-            return Optional.of(Integer.parseInt(s));
-        } catch (NumberFormatException e) {
-            return Optional.empty();
         }
     }
 }

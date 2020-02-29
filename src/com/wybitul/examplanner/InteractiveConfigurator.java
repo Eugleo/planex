@@ -9,11 +9,48 @@ public class InteractiveConfigurator {
     private int defaultYear = -1;
     private int detailLevel;
 
-    private Set<ID> creditsDownloaded = new HashSet<>();
-    private Set<ID> statusDownloaded = new HashSet<>();
+    private final Set<ID> creditsDownloaded = new HashSet<>();
+    private final Set<ID> statusDownloaded = new HashSet<>();
 
     public InteractiveConfigurator(Config.Builder builder) {
         this.configBuilder = builder;
+    }
+
+    // ADAM Kdybych chtěl ty zprávy ve více jazycích, musel bych je mít uložené v nějakém objektu
+    // a používat je jako msg(o.welcome), msg(o.settings) atd, nebo je nějaký lepší způsob?
+    public Config startConfiguration() {
+        Asker.section("Úvodní nastavení");
+
+        detailLevel = getDetailLevel();
+        Map<ClassInfo, Set<LocalDate>> classExamDates = getClassExamDates();
+
+        Asker.section("Obecná nastavení");
+
+        if (detailLevel > 0) {
+            defaultYear = getDefaultYear();
+        }
+
+        Asker.msg("Od kdy se můžete začít učit?");
+        configBuilder.setBeginning(getDate());
+
+        if (detailLevel > 2) {
+            configBuilder.setWeightsConfig(getWeightsConfig());
+        }
+        if (detailLevel > 0) {
+            configBuilder.setGlobalClassOptions(getGlobalClassOptions());
+        }
+
+        Set<ClassOptions.Builder> classBuilders = classExamDates.keySet().stream()
+                .map(c -> new ClassOptions.Builder(c, configBuilder.globalClassOptions, defaultYear))
+                .collect(Collectors.toSet());
+
+        Asker.section("Nastavení jednotlivých předmětů");
+
+        classBuilders.forEach(b -> b.setExamDates(classExamDates.getOrDefault(b.classInfo, new HashSet<>())));
+        optionallyParseCreditsAndStatus(classBuilders);
+        classBuilders.forEach(b -> configBuilder.addClassOptions(getClassOptions(b)));
+
+        return configBuilder.createConfig();
     }
 
     private ClassOptions getClassOptions(ClassOptions.Builder b) {
@@ -83,41 +120,6 @@ public class InteractiveConfigurator {
         return b.setLowBound(lowBound).setHighBound(highBound).setIgnore(shouldIgnore).createClassOptions();
     }
 
-    // ADAM Kdybych chtěl ty zprávy ve více jazycích, musel bych je mít uložené v nějakém objektu
-    // a používat je jako msg(o.welcome), msg(o.settings) atd, nebo je nějaký lepší způsob?
-    public Config startConfiguration() {
-        Asker.section("Úvodní nastavení");
-
-        detailLevel = getDetailLevel();
-        Map<ClassInfo, Set<LocalDate>> classExamDates = getClassExamDates();
-
-        Asker.section("Obecná nastavení");
-
-        defaultYear = getDefaultYear();
-
-        Asker.msg("Od kdy se můžete začít učit?");
-        configBuilder.setBeginning(getDate());
-
-        if (detailLevel > 2) {
-            configBuilder.setWeightsConfig(getWeightsConfig());
-        }
-        if (detailLevel > 0) {
-            configBuilder.setGlobalClassOptions(getGlobalClassOptions());
-        }
-
-        Set<ClassOptions.Builder> classBuilders = classExamDates.keySet().stream()
-                .map(c -> new ClassOptions.Builder(c, configBuilder.globalClassOptions, defaultYear))
-                .collect(Collectors.toSet());
-
-        Asker.section("Nastavení jednotlivých předmětů");
-
-        classBuilders.forEach(b -> b.setExamDates(classExamDates.getOrDefault(b.classInfo, new HashSet<>())));
-        optionallyParseCreditsAndStatus(classBuilders);
-        classBuilders.forEach(b -> configBuilder.addClassOptions(getClassOptions(b)));
-
-        return configBuilder.createConfig();
-    }
-
     private Map<ClassInfo, Set<LocalDate>> getClassExamDates() {
         Asker.header("Nastavení termínů zkoušek");
 
@@ -168,9 +170,9 @@ public class InteractiveConfigurator {
     }
 
     private int getDefaultYear() {
-        Asker.msg("V průběhu konfigurace budete často zadávat různá data.",
-                "Abyste si ušetřili čas s jejich psaním, zadejte prosím rok",
-                "který bude automaticky přidán ke každému datu bez specifikovaného roku.");
+        Asker.msg("V průběhu konfigurace budete zadávat různá data.",
+                "Abyste si ušetřili čas s jejich psaním, zadejte prosím výchozí rok",
+                "který pak bude automaticky přidán ke každému datu bez specifikovaného roku.");
 
         return Asker.ask(
                 "zadejte celé číslo mezi 2000 a 3000",

@@ -1,9 +1,9 @@
 package com.wybitul.examplanner;
 
 public class StatusFunction {
-    int p;
-    int pvp;
-    int v;
+    final int p;
+    final int pvp;
+    final int v;
 
     public StatusFunction(int p, int pvp, int v) {
         this.p = p;
