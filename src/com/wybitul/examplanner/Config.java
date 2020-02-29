@@ -28,7 +28,7 @@ public class Config {
     static class Builder extends OptionParser {
         private LocalDate beginning;
         ClassOptions globalClassOptions;
-        private final Set<ClassOptions> classOptions;
+        private Set<ClassOptions> classOptions;
         private WeightsConfig weightsConfig;
         int defaultYear;
 
@@ -52,8 +52,8 @@ public class Config {
             weightsConfig = defaultConfig.weightsConfig;
         }
 
-        public Builder addClassOptions(ClassOptions opt) {
-            classOptions.add(opt);
+        public Builder setClassOptions(Set<ClassOptions> classOptions) {
+            this.classOptions = classOptions;
             return this;
         }
 

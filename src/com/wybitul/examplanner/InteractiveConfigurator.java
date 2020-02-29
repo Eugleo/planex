@@ -48,7 +48,10 @@ public class InteractiveConfigurator {
 
         classBuilders.forEach(b -> b.setExamDates(classExamDates.getOrDefault(b.classInfo, new HashSet<>())));
         optionallyParseCreditsAndStatus(classBuilders);
-        classBuilders.forEach(b -> configBuilder.addClassOptions(getClassOptions(b)));
+        Set<ClassOptions> classOptions = classBuilders.stream()
+                .map(this::getClassOptions)
+                .collect(Collectors.toSet());
+        configBuilder.setClassOptions(classOptions);
 
         return configBuilder.createConfig();
     }
