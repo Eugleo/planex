@@ -196,6 +196,11 @@ public class ClassOptions {
             return this;
         }
 
+        public Builder setIgnore(boolean ignore) {
+            this.ignore = ignore;
+            return this;
+        }
+
         public ClassOptions createClassOptions() {
             return new ClassOptions(classInfo, status, idealPrepTime, minPrepTime, weight,
                     credits, backupTries, ignore, lowBound, highBound, examDates);

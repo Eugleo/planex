@@ -7,7 +7,7 @@ public class Config {
     final LocalDate beginning;
     final Set<ClassOptions> classOptions;
     final WeightsConfig weightsConfig;
-    public final ClassOptions userDefaultOpts;
+    public final ClassOptions globalClassOptions;
 
     public static final WeightsConfig defaultWeightsConfig =
             new WeightsConfig(new StatusFunction(3, 2, 1), 1, 1, 1);
@@ -16,10 +16,10 @@ public class Config {
             false, Optional.empty(), Optional.empty(), new HashSet<>()
     );
 
-    public Config(LocalDate beginning, ClassOptions userDefaultOpts,
+    public Config(LocalDate beginning, ClassOptions globalClassOptions,
                   Set<ClassOptions> classOptions, WeightsConfig weightsConfig) {
         this.beginning = beginning;
-        this.userDefaultOpts = userDefaultOpts;
+        this.globalClassOptions = globalClassOptions;
         this.classOptions = classOptions;
         this.weightsConfig = weightsConfig;
     }
@@ -27,8 +27,8 @@ public class Config {
     @SuppressWarnings("UnusedReturnValue")
     static class Builder extends OptionParser {
         private LocalDate beginning;
-        ClassOptions globalClassOptions = Config.defaultClassOptions;
-        private final Set<ClassOptions> classOptions = new HashSet<>();
+        ClassOptions globalClassOptions;
+        private final Set<ClassOptions> classOptions;
         private WeightsConfig weightsConfig;
         int defaultYear;
 
@@ -39,7 +39,18 @@ public class Config {
                             .orElseThrow(() -> new IncorrectConfigFileException("Incorrect date format"))));
         }
 
-        Builder() { }
+        Builder() {
+            classOptions = new HashSet<>();
+            globalClassOptions = Config.defaultClassOptions;
+            weightsConfig = Config.defaultWeightsConfig;
+        }
+
+        Builder(Config defaultConfig) {
+            beginning = defaultConfig.beginning;
+            globalClassOptions = defaultConfig.globalClassOptions;
+            classOptions = defaultConfig.classOptions;
+            weightsConfig = defaultConfig.weightsConfig;
+        }
 
         public Builder addClassOptions(ClassOptions opt) {
             classOptions.add(opt);

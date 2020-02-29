@@ -1,5 +1,6 @@
 package com.wybitul.examplanner;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -31,6 +32,32 @@ public class Utils {
             return String.format("%d. %d.", date.getDayOfMonth(), date.getMonthValue());
         } else {
             return String.format("%d. %d. %d", date.getDayOfMonth(), date.getMonthValue(), date.getYear());
+        }
+    }
+
+    public static Optional<Boolean> parseBoolean(String s) {
+        switch (s.toLowerCase()) {
+            case "y":
+            case "yes":
+            case "true":
+            case "ano":
+            case "a":
+                return Optional.of(true);
+            case "n":
+            case "no":
+            case "false":
+            case "ne":
+                return Optional.of(false);
+            default:
+                return Optional.empty();
+        }
+    }
+
+    public static Optional<Integer> parseInteger(String s) {
+        try {
+            return Optional.of(Integer.parseInt(s));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
         }
     }
 }

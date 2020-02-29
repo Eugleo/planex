@@ -46,13 +46,13 @@ public class ConfigWriter {
             comment("Globální parametry");
             comment("Platí pro každý předmět, u kterého nejsou přepsány");
             comment("Pro jejich vysvětlení viz README");
-            writeClassOptions(config.userDefaultOpts, Config.defaultClassOptions, false);
+            writeClassOptions(config.globalClassOptions, Config.defaultClassOptions, false);
             comment("Parametry specifické pro předměty");
             config.classOptions.stream()
                     .sorted(Comparator.comparing(opt -> opt.classInfo.name))
                     .forEach(opt -> {
                         writeClassInfo(opt.classInfo);
-                        writeClassOptions(opt, config.userDefaultOpts, true);
+                        writeClassOptions(opt, config.globalClassOptions, true);
                     });
             return true;
         } catch (FileNotFoundException e) {

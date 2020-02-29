@@ -1,33 +1,38 @@
 package com.wybitul.examplanner;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Main {
-    private static final Scanner sc = new Scanner(System.in);
-
     static {
         System.loadLibrary("jniortools");
     }
 
-    // TODO Refactor dialogs
     public static void main(String[] args) {
         Config config;
-        if (args.length == 0) {
-            System.out.println("Pokud již máte konfigurační soubor, zadejte cestu k němu. " +
-                    "Pokud ne, nezadávejte nic; spustí se interaktivní konfigurátor, který vás provede " +
-                    "vytvořením nového konfiguračního souboru.");
-            String line = sc.nextLine();
-
-            if (line.isEmpty()) {
-                config = createNewConfig();
-            } else {
-                config = loadConfigFromFile(line);
-            }
+        if (args.length > 0) {
+            config = ConfigParser.parse(args[0])
+                    .map(c -> {
+                        Asker.msg("Chtěli byste tento konfigurační soubor dále upravit",
+                                "v interaktivním konfigurátoru?");
+                        Boolean shouldEdit = Asker.ask(
+                                "odpovězte prosím \"a\" nebo \"n\"",
+                                Utils::parseBoolean,
+                                false,
+                                "neupravovat"
+                        );
+                        return shouldEdit ? editConfigInConfigurator(c) : c;
+                    })
+                    .orElseGet(() -> {
+                        Asker.msg("Soubor se nepodařilo načíst. Zkuste prosím zadat cestu znovu.");
+                        return getConfig();
+                    });
         } else {
-            config = loadConfigFromFile(args[0]);
+            Asker.msg("Pokud již máte konfigurační soubor, zadejte cestu k němu.");
+            config = getConfig();
         }
 
         try {
@@ -40,35 +45,28 @@ public class Main {
         }
     }
 
-    private static Config loadConfigFromFile(String path) {
-        Optional<Config> optConfig = ConfigParser.parse(path);
-
-        while (optConfig.isEmpty()) {
-            System.out.println("Při čtení souboru se vyskytla chyba. Zadejte prosím cestu znovu, nebo " +
-                    "ponechte vstup prázdný pro spuštění interaktivního konfigurátoru.");
-            String line = sc.nextLine();
-            if (line.isEmpty()) {
-                return createNewConfig();
-            }
-            optConfig = ConfigParser.parse(line);
-        }
-
-        return optConfig.get();
+    private static Config getConfig() {
+        return Asker.ask(
+                "zadejte cestu ke konfiguračnímu souboru",
+                ConfigParser::parse,
+                "vytvořit nový konfigurační soubor"
+        ).orElseGet(Main::newConfig);
     }
 
-    private static Config createNewConfig() {
-        Config cfg = InteractiveConfigurator.startConfiguration();
-        System.out.println("Zadejte cestu, kam si přejete tento konfigurační soubor uložit.");
+    private static Config newConfig() {
+        return editConfigInConfigurator(new Config.Builder().createConfig());
+    }
 
-        boolean writeSuccessful = false;
-        while (!writeSuccessful) {
-            String path = sc.nextLine();
-            try {
-                writeSuccessful = ConfigWriter.write(cfg, path);
-            } catch (Exception e) {
-                System.out.println("Ukládání souboru se nepovedlo. Zadejte prosím cestu znovu.");
-            }
-        }
+    private static Config editConfigInConfigurator(Config config) {
+        Config cfg = new InteractiveConfigurator(new Config.Builder(config)).startConfiguration();
+
+        Asker.section("Uložení souboru");
+        Asker.msg("Zadejte cestu, kam si přejete tento konfigurační soubor uložit.");
+        Asker.ask(
+                "zadejte platnou cestu",
+                Function.identity(),
+                p -> ConfigWriter.write(cfg, p)
+        );
 
         return cfg;
     }
