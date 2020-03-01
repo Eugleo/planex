@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+// ADAM Na jaké package/části bys to rozdělil?
 public class Main {
     static {
         System.loadLibrary("jniortools");
