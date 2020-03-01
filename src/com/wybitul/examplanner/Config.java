@@ -26,9 +26,9 @@ public class Config {
 
     @SuppressWarnings("UnusedReturnValue")
     static class Builder extends OptionParser {
-        private LocalDate beginning;
+        LocalDate beginning;
         ClassOptions globalClassOptions;
-        private Set<ClassOptions> classOptions;
+        Set<ClassOptions> classOptions;
         private WeightsConfig weightsConfig;
         int defaultYear;
 

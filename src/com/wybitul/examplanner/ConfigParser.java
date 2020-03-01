@@ -3,7 +3,9 @@ package com.wybitul.examplanner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +49,7 @@ public class ConfigParser {
             configBuilder.setWeightsConfig(wb.createWeightsConfig());
 
             // Reading the body
+            Set<ClassOptions> classOptionsSet = new HashSet<>();
             boolean buildingDefault = true;
             var currentClassBuilder = new ClassOptions.Builder(Config.defaultClassOptions, defaultYear);
             while (sc.hasNextLine()) {
@@ -55,7 +58,7 @@ public class ConfigParser {
                     buildingDefault = false;
                     configBuilder.setGlobalClassOptions(classOpts);
                 } else {
-                    configBuilder.addClassOptions(classOpts);
+                    classOptionsSet.add(classOpts);
                 }
 
                 if (sc.peekNextLine() != null && sc.peekNextLine().startsWith("=")) {
@@ -67,7 +70,7 @@ public class ConfigParser {
                 }
             }
 
-            return Optional.of(configBuilder.createConfig());
+            return Optional.of(configBuilder.setClassOptions(classOptionsSet).createConfig());
         } catch (IncorrectConfigFileException e) {
             System.out.printf("%s on line %d\n", e.getMessage(), sc.getLineNumber());
         } catch (FileNotFoundException e) {

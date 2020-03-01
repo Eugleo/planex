@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "OptionalGetWithoutIsPresent"})
 public class InteractiveConfigurator {
     private final Config.Builder configBuilder;
     private int defaultYear = -1;
@@ -31,7 +32,11 @@ public class InteractiveConfigurator {
         }
 
         Asker.msg("Od kdy se můžete začít učit?");
-        configBuilder.setBeginning(getDate());
+        if (configBuilder.beginning != null) {
+            configBuilder.setBeginning(getDate(configBuilder.beginning));
+        } else {
+            configBuilder.setBeginning(getDate());
+        }
 
         if (detailLevel > 2) {
             configBuilder.setWeightsConfig(getWeightsConfig());
@@ -59,12 +64,14 @@ public class InteractiveConfigurator {
     private ClassOptions getClassOptions(ClassOptions.Builder b) {
         Asker.header("Nastavení předmětu", b.classInfo.name);
 
+        ClassOptions def = getClassOptionsWithID(b.classInfo.id).orElse(configBuilder.globalClassOptions);
+
         Asker.msg("Kolik dní byste v ideálním případě chtěli mít na přípravu na tento předmět?");
-        b.setIdealPrepTime(getPositiveNumber(configBuilder.globalClassOptions.idealPrepTime));
+        b.setIdealPrepTime(getPositiveNumber(def.idealPrepTime));
 
         if (!creditsDownloaded.contains(b.classInfo.id)) {
             Asker.msg("Kolik kreditů je za tento předmět?");
-            b.setCredits(getPositiveNumber(b.credits));
+            b.setCredits(getPositiveNumber(def.credits));
         }
 
         if (!statusDownloaded.contains(b.classInfo.id)) {
@@ -73,7 +80,7 @@ public class InteractiveConfigurator {
                     "Zadejte P, PVP nebo V.",
                     s -> Status.valueOf(s.toUpperCase()),
                     i -> true,
-                    configBuilder.globalClassOptions.status
+                    def.status
             );
             b.setStatus(status);
         }
@@ -81,36 +88,24 @@ public class InteractiveConfigurator {
         if (detailLevel == 0) { return b.createClassOptions(); }
 
         Asker.msg("Kolik chcete nechat náhradních termínů?");
-        b.setBackupTries(getPositiveNumber(configBuilder.globalClassOptions.backupTries));
+        b.setBackupTries(getPositiveNumber(def.backupTries));
 
         if (detailLevel <= 1) { return b.createClassOptions(); }
 
         Asker.msg("Jakou váhu chcete přiřadit tomuto předmětu?");
-        b.setWeight(getNumber(configBuilder.globalClassOptions.weight));
+        b.setWeight(getNumber(def.weight));
 
         if (detailLevel <= 2) { return b.createClassOptions(); }
 
         Asker.msg("Kdy nejdříve můžete dělat zkoušku z tohoto předmětu??");
-        Optional<LocalDate> lowBound = Asker.ask(
-                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
-                s -> Utils.parseDate(s, defaultYear),
-                Optional::isPresent,
-                configBuilder.globalClassOptions.lowBound,
-                "bez omezení"
-        );
+        b.setLowBound(getOptionalDate(def.lowBound));
 
         Asker.msg("Kdy nejpozději můžete dělat zkoušku z tohoto předmětu?");
-        Optional<LocalDate> highBound = Asker.ask(
-                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
-                s -> Utils.parseDate(s, defaultYear),
-                Optional::isPresent,
-                configBuilder.globalClassOptions.highBound,
-                "bez omezení"
-        );
+        b.setHighBound(getOptionalDate(def.highBound));
 
         Asker.msg("Kolik nejméně dní potřebujete na přípravu? S tímto nastavením opatrně,",
                 "jedná se o pevnou hranici a mohlo by se tedy stát, že za daných podmínek nebude existovat řešení.");
-        b.setMinPrepTime(getPositiveNumber(configBuilder.globalClassOptions.minPrepTime));
+        b.setMinPrepTime(getPositiveNumber(def.minPrepTime));
 
         Asker.msg("Přejete si, aby model tento předmět ignoroval?");
         Boolean shouldIgnore = Asker.ask(
@@ -120,14 +115,25 @@ public class InteractiveConfigurator {
                 "neignorovat"
         );
 
-        return b.setLowBound(lowBound).setHighBound(highBound).setIgnore(shouldIgnore).createClassOptions();
+        return b.setIgnore(shouldIgnore).createClassOptions();
     }
 
     private Map<ClassInfo, Set<LocalDate>> getClassExamDates() {
         Asker.header("Nastavení termínů zkoušek");
-
         Asker.msg("Stáhněte si prosím ze SISu xlsx tabulku s termíny zkoušek (návod můžete najít v README).");
-        return Asker.ask("zadejte prosím cestu k platnému xlsx souboru", ClassParser::parse);
+
+        long examsCount = configBuilder.classOptions.stream().mapToLong(opt -> opt.examDates.size()).sum();
+        if (examsCount > 0) {
+            return Asker.ask(
+                    "zadejte prosím cestu k platnému xlsx souboru",
+                    ClassParser::parse,
+                    configBuilder.classOptions.stream()
+                        .map(opt -> Map.entry(opt.classInfo, opt.examDates))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
+                    "použít data z původního souboru");
+        } else {
+            return Asker.ask("zadejte prosím cestu k platnému xlsx souboru", ClassParser::parse);
+        }
     }
 
     private ClassOptions getGlobalClassOptions() {
@@ -137,39 +143,40 @@ public class InteractiveConfigurator {
                 "Pro detailní popis jednotlivých parametrů viz README.",
                 "Pokročilé parametry mohou být nastaveny ručně v konfiguračním souboru.");
 
-        var b = new ClassOptions.Builder(configBuilder.globalClassOptions, defaultYear);
+        ClassOptions def = configBuilder.globalClassOptions;
+
+        var b = new ClassOptions.Builder(def, defaultYear);
 
         Asker.newline();
 
         Asker.msg("Kolik chcete nechat náhradních termínů?");
-        b.setBackupTries(getPositiveNumber(configBuilder.globalClassOptions.backupTries));
+        b.setBackupTries(getPositiveNumber(def.backupTries));
 
         Asker.msg("Kdy nejdříve můžete dělat zkoušku?");
-        Optional<LocalDate> lowBound = Asker.ask(
-                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
-                s -> Utils.parseDate(s, defaultYear),
-                "bez omezení"
-        );
+        b.setLowBound(getOptionalDate(def.lowBound));
         Asker.msg("Kdy nejpozději můžete dělat zkoušku?");
-        Optional<LocalDate> highBound = Asker.ask(
-                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
-                s -> Utils.parseDate(s, defaultYear),
-                "bez omezení"
-        );
-        b.setLowBound(lowBound).setHighBound(highBound);
+        b.setHighBound(getOptionalDate(def.highBound));
 
         if (detailLevel <= 1) { return b.createClassOptions(); }
 
         Asker.msg("Jaká chcete aby byla výchozí váha předmětu?");
-        b.setWeight(getNumber(configBuilder.globalClassOptions.weight));
+        b.setWeight(getNumber(def.weight));
 
         if (detailLevel <= 2) { return b.createClassOptions(); }
 
         Asker.msg("Kolik nejméně dní (obecně) potřebujete na přípravu? S tímto nastavením opatrně,",
                 "jedná se o pevnou hranici a mohlo by se tedy stát, že za daných podmínek nebude existovat řešení.");
-        b.setMinPrepTime(getPositiveNumber(configBuilder.globalClassOptions.minPrepTime));
+        b.setMinPrepTime(getPositiveNumber(def.minPrepTime));
 
         return b.createClassOptions();
+    }
+
+    private Optional<LocalDate> getOptionalDate(Optional<LocalDate> def) {
+        return Asker.ask(
+                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
+                s -> Utils.parseDate(s, defaultYear),
+                def.map(d -> Utils.formatDate(d, defaultYear)).orElse("bez omezení")
+        );
     }
 
     private int getDefaultYear() {
@@ -254,9 +261,19 @@ public class InteractiveConfigurator {
 
     private LocalDate getDate() {
         return Asker.ask(
-                "zadejte datum ve formátu: den. měsíc. (popř. rok)",
+                "zadejte datum ve formátu: den. měsíc. rok",
                 s -> Utils.parseDate(s, defaultYear)
         );
+    }
+
+    private LocalDate getDate(LocalDate def) {
+        return Asker.ask(
+                "zadejte datum ve formátu: den. měsíc. rok",
+                s -> Utils.parseDate(s, defaultYear),
+                Optional::isPresent,
+                Optional.of(def),
+                Utils.formatDate(def, defaultYear)
+        ).get();
     }
 
     private int getNumber(int def) {
@@ -313,5 +330,9 @@ public class InteractiveConfigurator {
         int v = getNumber(Config.defaultWeightsConfig.st.apply(Status.V));
 
         return b.setStatusFunction(new StatusFunction(p, pvp, v)).createWeightsConfig();
+    }
+
+    private Optional<ClassOptions> getClassOptionsWithID(ID id) {
+        return configBuilder.classOptions.stream().filter(opt -> opt.classInfo.id.equals(id)).findFirst();
     }
 }
