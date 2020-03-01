@@ -69,7 +69,10 @@ public class Main {
         Asker.ask(
                 "zadejte platnou cestu bez koncovky",
                 Function.identity(),
-                (String p) -> !p.matches("^.*\\.[^/\\\\.]+$") && ConfigWriter.write(cfg, p + ".plx")
+                (String p) ->
+                        !p.isEmpty() &&
+                        !p.matches("^.*\\.[^/\\\\.]+$") &&
+                                ConfigWriter.write(cfg, p + ".plx")
         );
 
         return cfg;

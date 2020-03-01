@@ -14,7 +14,7 @@ Tabulku s termíny zkoušek používá Planex (celkem předpokládatelně) k tom
 
 ![Kde přesně tlačítko najít](imgs/sis-xlsx.png)
 
-Planex navíc nerozděluje čas na zkoušku předmětům naslepo, ale podle jejich *důležitosti*, kterou mimo jiné počítá z jejich kreditového ohodnocení a také z toho, jestli je předmět povinný/povinně volitelný nebo ne (více viz [Důležitost předmětu](#důležitost)). 
+Planex navíc nerozděluje čas na zkoušku předmětům naslepo, ale podle jejich *důležitosti*, kterou mimo jiné počítá z jejich kreditového ohodnocení a také z toho, jestli je předmět povinný/povinně volitelný nebo ne (více viz [Důležitost předmětu](#důležitost-předmětu)). 
 
 Tyto informace je možné k předmětům vyplnit ručně, ale jednodušší je stáhnout ze SISu stránku, která tyto informace už obsahuje:  **Zápis předmětů a rozvrhu** > **Zapsané** a poté uložte celou stránku jako `.html` (to se nejčastěji dělá pomocí <kbd>Ctrl + S</kbd> nebo <kbd>Command + S</kbd>).
 
@@ -32,11 +32,13 @@ Abyste věděli, co a jak upravovat, je dobré přesně pochopit jak funguje vý
 
 Důležitost ovlivňuje, jak moc se Planex u daného předmětu snaží dodržet vámi zadaný ideální čas přípravy.
 
-$$důležitost(p) = v \cdot váha_p + k \cdot kredity_p + s \cdot st(status_p),$$
+```
+důležitost(p) = v * váha_p + k * kredity_p + s * st(status_p)
+```
 
-kde $v$, $k$ a $s$ jsou globální parametry udávající váhu jednotlivých vlastností předmětu a $st$ je funkce přiřazující číslo různým statusům předmětu. $kredity$ a $status$ jsou vlastnosti předmětu stažené ze SISu, zatímco $váha$ je atribut, který každému předmětu přidělujete vy.
+kde *v*, *k* a *s* jsou globální parametry udávající váhu jednotlivých vlastností předmětu a *st* je funkce přiřazující číslo různým statusům předmětu. *Kredity* a *status* jsou vlastnosti předmětu stažené ze SISu, zatímco *váha* je atribut, který každému předmětu přidělujete vy.
 
-Úpravou těchto parametrů tedy můžete ovlivňovat, na co se Planex bude soustředit. Záleží vám hodně na Javě? Nastavte jí vysokou $váhu$. Chcete hlavně získat hodně kreditů? Nastavte vysoké $k$. Jsou pro vás nejdůležitějí volitelné předměty? Nastavte $st(volitelný)$ na něco velkého.
+Úpravou těchto parametrů tedy můžete ovlivňovat, na co se Planex bude soustředit. Záleží vám hodně na Javě? Nastavte jí vysokou *váhu*. Chcete hlavně získat hodně kreditů? Nastavte vysoké *k*. Jsou pro vás nejdůležitějí volitelné předměty? Nastavte *st(volitelný)* na něco velkého.
 
 Co znamená *nastavit x na něco vysokého* závisí na hodnotě ostatních parametrů; výchozí hodnoty lze vidět v interaktivním průvodci i v konfiguračním souboru.
 

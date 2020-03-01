@@ -1,5 +1,5 @@
 ## Dokumentace konfiguračního souboru
-*Předpokládá se, že chápete, jak probíhá výpočet důležitosti předmětu.*
+*Předpokládá se, že chápete, jak probíhá výpočet [důležitosti předmětu](README.md#důležitost-předmětu).*
 
 Konfigurační soubor Planexu má koncovku `.plx`. Nachází se v něm všechny informace, které Planex potřebuje k chodu. Dělí se v zásadě na tři oddíly:
 
