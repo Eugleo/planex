@@ -6,6 +6,13 @@ K přizpůsobení Planexu se používá jednoduchý konfigurační soubor (jeho 
 
 ## První spuštění
 
+Pro spuštění je (prozatím) potřeba stáhnout celý GitHubový projekt. Pokud jste na Unixu, stačí pouze spustit následující kód:
+
+```shell script
+git clone https://github.com/Eugleo/planex.git
+java -Djava.library.path="planex/lib" -jar "planex/out/artifacts/java_jar/java.jar"
+```  
+
 Pokud nemáte konfigurační soubor (což se při prvním použití předpokládá), nevadí — stačí Planex prostě spustit a nechat se interaktivním průvodcem provést vytvořením konfigurace. Průvodce pracuje na několika úrovních, které se liší tím, na jak velké podrobnosti se vás během konfigurace ptá. Pro ideální  poměr mezi časem stráveným konfigurací a užitečností výsledků pro nové uživatele doporučejeme úroveň `1`.
 
 Na všech úrovních je klíčové **zadání cest ke dvěma souborům**: excelové tabulce s termíny zkoušek a html souboru s informacemi o předmětech.
