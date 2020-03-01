@@ -7,6 +7,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/*
+Prettyprints a Config object to a .plx file.
+ */
+
 public class ConfigWriter {
     private static PrintStream out;
     private static int defaultYear;

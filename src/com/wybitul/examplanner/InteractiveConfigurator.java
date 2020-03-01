@@ -4,6 +4,12 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/*
+Edits the given Config file by asking the user questions.
+When given an empty/default Config, it an be used to create new config from scratch, otherwise
+it can edit existing configs.
+ */
+
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "OptionalGetWithoutIsPresent"})
 public class InteractiveConfigurator {
     private final Config.Builder configBuilder;

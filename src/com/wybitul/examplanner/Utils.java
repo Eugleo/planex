@@ -5,6 +5,10 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/*
+Helper functions used all over the program.
+ */
+
 public class Utils {
     private Utils() { }
 

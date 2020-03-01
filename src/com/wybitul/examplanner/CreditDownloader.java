@@ -7,6 +7,11 @@ import org.jsoup.nodes.Element;
 import java.io.*;
 import java.util.*;
 
+/*
+Automatically downloads credits from SIS based on their class IDs.
+This information is available in SIS even without any authentication.
+ */
+
 public class CreditDownloader {
     private static HashMap<ID, Integer> creditMap;
 

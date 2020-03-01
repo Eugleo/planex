@@ -12,6 +12,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/*
+Parses credits and statuses from a given .html file.
+The file needs to be downloaded manually from Subjects and schedule registration on SIS.
+ */
+
 public class CreditsAndStatusParser {
     private Document doc;
 

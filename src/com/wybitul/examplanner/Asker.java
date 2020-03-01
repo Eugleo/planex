@@ -5,6 +5,10 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/*
+Utility class/DSL to retrieve values from the user. Checks for improper input.
+ */
+
 @SuppressWarnings({"OptionalGetWithoutIsPresent", "SameParameterValue"})
 public class Asker {
     private static final Scanner sc = new Scanner(System.in);

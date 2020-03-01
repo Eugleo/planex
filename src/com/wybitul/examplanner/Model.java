@@ -11,6 +11,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/*
+The workhorse of this program. Uses CP-SAT to solve the model specified by Config.
+ */
+
 public class Model {
     final CpModel model = new CpModel();
     final Set<ClassModel> classModels = new HashSet<>();

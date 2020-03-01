@@ -10,6 +10,11 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/*
+Parses exam dates from an xlsx file and matches them to ClassInfo objects.
+No more details can be retrieved from the table than the dates and ClassInfo.
+ */
+
 public class ClassParser {
     private static final Map<ClassInfo, Set<LocalDate>> dates = new HashMap<>();
 

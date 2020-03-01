@@ -5,6 +5,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/*
+Used as a base class for builders which can (apart from setters) receive the properties
+as string attributes, e.g. - property: value
+This allows me to have all the code related to building in the builder itself (and not in some parser)
+ */
+
 public class OptionParser {
     final Map<String, ThrowingConsumer<String>> optConsumers = new HashMap<>();
     final Map<String, Runnable> flagActions = new HashMap<>();

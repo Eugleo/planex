@@ -6,6 +6,10 @@ enum Type {
     EXAM, COLLOQUIUM
 }
 
+/*
+Basic info about a class. You can discern one class (ClassOption) from another only by its ClassInfo.
+ */
+
 public class ClassInfo {
     final ID id;
     final String name;

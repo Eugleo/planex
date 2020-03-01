@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/*
+Crude class used to simplify manipulation with two dimensional arrays.
+ */
+
 @SuppressWarnings("unused")
 public class Matrix<T> {
     final List<List<T>> columns = new ArrayList<>();

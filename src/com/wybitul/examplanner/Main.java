@@ -6,7 +6,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-// ADAM Na jaké package/části bys to rozdělil?
+/*
+Open/Create/Edit a config file, run the model with the given config and print the results.
+ */
+
+// ADAM Na jaké package bys to rozdělil?
 public class Main {
     static {
         System.loadLibrary("jniortools");

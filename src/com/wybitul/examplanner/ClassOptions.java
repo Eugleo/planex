@@ -8,6 +8,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/*
+All information about a class. Mostly used in model building.
+ */
+
 @SuppressWarnings({"UnusedReturnValue", "OptionalUsedAsFieldOrParameterType"})
 public class ClassOptions {
     final ClassInfo classInfo;

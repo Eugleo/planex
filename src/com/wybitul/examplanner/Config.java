@@ -3,6 +3,10 @@ package com.wybitul.examplanner;
 import java.time.LocalDate;
 import java.util.*;
 
+/*
+Holds everything the model needs to do its job. Closely reflects the configuration file.
+ */
+
 public class Config {
     final LocalDate beginning;
     final Set<ClassOptions> classOptions;

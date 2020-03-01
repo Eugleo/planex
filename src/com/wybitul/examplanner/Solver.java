@@ -8,6 +8,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/*
+Runs a model and creates Result object from the solution.
+ */
+
 public class Solver {
     final Model model;
     final CpSolver solver = new CpSolver();

@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/*
+Holds the specification of weight parameters, which are used to compute class importance.
+ */
+
 public class WeightsConfig {
     final StatusFunction st;
     final int s;

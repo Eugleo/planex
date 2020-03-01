@@ -9,6 +9,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/*
+Parses the configuration .plx file.
+ */
+
 public class ConfigParser {
     private static PeekScanner sc;
 

@@ -1,5 +1,9 @@
 package com.wybitul.examplanner;
 
+/*
+Used to format numbers (e.g. 1 -> 1 den, 9 -> 9 dní)
+ */
+
 public class WordFormatter {
     final String zeroAndFivePlus;
     final String one;
