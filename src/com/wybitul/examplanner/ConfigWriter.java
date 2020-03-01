@@ -95,7 +95,7 @@ public class ConfigWriter {
 
         optionMap1.forEach((opt, val) -> {
             // opts1 aren't global parameters => always write status and příprava fields
-            boolean condition = isSpecificClass && (opt.equals("status") || opt.equals("příprava"));
+            boolean condition = isSpecificClass && (opt.equals("status") || opt.equals("optimum"));
             if (condition || !optionMap2.get(opt).equals(val)) {
                 writeOption(opt, val);
             }
@@ -112,15 +112,15 @@ public class ConfigWriter {
         WordFormatter days = new WordFormatter("dní", "den", "dny");
         return Map.of(
                 "kredity", opts.credits,
-                "status", opts.status.name(),
+                "status", opts.status.toString(),
                 "váha", opts.weight,
-                "termíny", opts.backupTries,
-                "příprava", days.format(opts.idealPrepTime),
+                "pokusy", opts.backupTries,
+                "optimum", days.format(opts.idealPrepTime),
                 "minimum", days.format(opts.minPrepTime),
-                "datum", String.format("%s - %s",
+                "rozmezí", String.format("%s - %s",
                         opts.lowBound.map(d -> Utils.formatDate(d, defaultYear)).orElse("x"),
                         opts.highBound.map(d -> Utils.formatDate(d, defaultYear)).orElse("x")),
-                "zkoušky", String.join(", ", exams)
+                "termíny", String.join(", ", exams)
         );
     }
 

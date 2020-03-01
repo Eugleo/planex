@@ -67,9 +67,9 @@ public class Main {
         Asker.section("Uložení souboru");
         Asker.msg("Zadejte cestu, kam si přejete tento konfigurační soubor uložit.");
         Asker.ask(
-                "zadejte platnou cestu",
+                "zadejte platnou cestu bez koncovky",
                 Function.identity(),
-                p -> ConfigWriter.write(cfg, p)
+                (String p) -> !p.matches("^.*\\.[^/\\\\.]+$") && ConfigWriter.write(cfg, p + ".plx")
         );
 
         return cfg;

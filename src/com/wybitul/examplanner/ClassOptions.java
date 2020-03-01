@@ -60,7 +60,7 @@ public class ClassOptions {
         // ADAM Rád bych místo Stringů použil nějaký enum, kde by byly uloženy všechny možné optiony
         // Jak na to?
         {
-            addOption("datum", value -> {
+            addOption("rozmezí", value -> {
                 Pattern generalP = Pattern.compile("^\\s*(.+)\\s*-\\s*(.+)\\s*$");
                 Matcher generalM = generalP.matcher(value);
 
@@ -70,7 +70,7 @@ public class ClassOptions {
                 setHighBound(Utils.parseDate(generalM.group(2), defaultYear));
             });
 
-            addOption("příprava", value -> {
+            addOption("optimum", value -> {
                 Pattern p = Pattern.compile("^(\\d+)");
                 Matcher m = p.matcher(value);
                 if (!m.find()) { throw new IncorrectConfigFileException("Incorrect number format"); }
@@ -114,9 +114,9 @@ public class ClassOptions {
                 setMinPrepTime(Integer.parseInt(m.group(1)));
             });
 
-            addOption("termíny", value -> backupTries = Integer.parseInt(value));
+            addOption("pokusy", value -> backupTries = Integer.parseInt(value));
 
-            addOption("zkoušky", value -> {
+            addOption("termíny", value -> {
                 String[] dateStrings = value.split(",\\s*");
                 examDates = Arrays.stream(dateStrings)
                         .map(str -> Utils.parseDate(str, defaultYear))
