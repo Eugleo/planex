@@ -32,9 +32,17 @@ distributions {
         contents {
             from "README.md"
             from "config-doc.md"
-            from('.') {
-                include 'src/lib'
+            from("lib") {
+                into "lib"
             }
         }
+    }
+}
+
+startScripts {
+    defaultJvmOpts = ["-Djava.library.path=APP_HOME_DIR/lib/native"]
+    doLast {
+        unixScript.text = unixScript.text.replace('APP_HOME_DIR', '\$APP_HOME')
+        windowsScript.text = windowsScript.text.replace('APP_HOME_DIR', '%APP_HOME%')
     }
 }
