@@ -82,4 +82,4 @@ Popřípadě přímo pro spuštění (místo pouhého buildu):
 ./gradlew run
 ```
 
-Pro uživatele Windows jsou příkazy podobné, pouze s opačnými lomítky: `.\gradlew build` a `.gradlew run`. Gradle wrapper se už o vše postará (včetně případného stažení správné verze gradlu).
+Pro uživatele Windows jsou příkazy podobné, pouze s opačnými lomítky a `.bat` koncovkou: `.\gradlew.bat build` a `.gradlew.bat run`. Gradle wrapper se už o vše postará (včetně případného stažení správné verze gradlu).
