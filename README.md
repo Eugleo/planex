@@ -6,12 +6,10 @@ K přizpůsobení Planexu se používá jednoduchý konfigurační soubor (jeho 
 
 ## První spuštění
 
-Pro spuštění je (prozatím) potřeba stáhnout celý GitHubový projekt. Pokud jste na Unixu, stačí pouze spustit následující kód:
-
-```shell script
-git clone https://github.com/Eugleo/planex.git
-java -Djava.library.path="planex/lib" -jar "planex/out/artifacts/java_jar/java.jar"
-```  
+1. Stáhněte poslední verzi Planexu z [Releases](https://github.com/Eugleo/planex/releases).
+2. Rozbalte archiv.
+3. Ve složce `bin` jsou spustitelné soubory pro Windows (`.bat`) i Unix (bez koncovky). Stačí si vybrat ten správný z nich a dvakrát na něj kliknout.
+4. Planex běží!
 
 Pokud nemáte konfigurační soubor (což se při prvním použití předpokládá), nevadí — stačí Planex prostě spustit a nechat se interaktivním průvodcem provést vytvořením konfigurace. Průvodce pracuje na několika úrovních, které se liší tím, na jak velké podrobnosti se vás během konfigurace ptá. Pro ideální  poměr mezi časem stráveným konfigurací a užitečností výsledků pro nové uživatele doporučejeme úroveň `1`.
 
@@ -63,3 +61,25 @@ Planex přeloží vaše požadavky do jazyka omezujích podmínek, které poté 
 
 Planex používá k hledání řešení knihovnu [Google OR-Tools](https://github.com/google/or-tools), konkrétně její CP-SAT část, která několikrát zvítězila na CP soutěžích, a která má zároveň přívětivou licenci Apache License 2.0 (viz složka `lib`).
 
+## Jak postavit projekt ze zdrojového kódu
+
+Pokud si potřebujete projekt postavit sami, například protože se chcete zapojit do vývoje (nebo protože jste můj cvičící z Javy), musíte jej nejprve stáhnout:
+
+```shell script
+git clone https://github.com/Eugleo/planex.git
+cd planex
+```
+
+A protože projekt používá gradle jako build tool, bude vám následně stačit použít gradle wrapper:
+
+```shell script
+./gradlew build
+```
+
+Popřípadě přímo pro spuštění (místo pouhého buildu):
+ 
+```shell script
+./gradlew run
+```
+
+Pro uživatele Windows jsou příkazy podobné, pouze s opačnými lomítky: `.\gradlew build` a `.gradlew run`. Gradle wrapper se už o vše postará (včetně případného stažení správné verze gradlu).
