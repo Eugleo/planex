@@ -9,8 +9,8 @@ repositories {
 dependencies {
     implementation("org.apache.poi:poi:4.1.2") // xls reading
     implementation("org.jsoup:jsoup:1.13.1") // html parsing
-    implementation(files("lib/com.google.ortools.jar")) // cp solver
-    implementation(files("lib/protobuf.jar")) // ortools dependency
+    implementation(files("lib/local/com.google.ortools.jar")) // cp solver
+    implementation("com.google.protobuf:protobuf-java:3.11.4") // ortools dependency
 }
 
 java {
@@ -19,8 +19,22 @@ java {
 
 application {
     mainClassName = "com.wybitul.planex.Main"
-    applicationDefaultJvmArgs = ["-Djava.library.path=lib"]
+    applicationDefaultJvmArgs = ["-Djava.library.path=lib/native"]
+    version = "1.0.0"
+
     run {
         standardInput = System.in
+    }
+}
+
+distributions {
+    main {
+        contents {
+            from "README.md"
+            from "config-doc.md"
+            from('.') {
+                include 'src/lib'
+            }
+        }
     }
 }
