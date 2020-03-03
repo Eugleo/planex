@@ -13,11 +13,10 @@ it can edit existing configs.
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "OptionalGetWithoutIsPresent"})
 public class InteractiveConfigurator {
     private final Config.Builder configBuilder;
-    private int defaultYear = -1;
-    private int detailLevel;
-
     private final Set<ID> creditsDownloaded = new HashSet<>();
     private final Set<ID> statusDownloaded = new HashSet<>();
+    private int defaultYear = -1;
+    private int detailLevel;
 
     public InteractiveConfigurator(Config.Builder builder) {
         this.configBuilder = builder;
@@ -91,17 +90,23 @@ public class InteractiveConfigurator {
             b.setStatus(status);
         }
 
-        if (detailLevel == 0) { return b.createClassOptions(); }
+        if (detailLevel == 0) {
+            return b.createClassOptions();
+        }
 
         Asker.msg("Kolik chcete nechat náhradních termínů?");
         b.setBackupTries(getPositiveNumber(def.backupTries));
 
-        if (detailLevel <= 1) { return b.createClassOptions(); }
+        if (detailLevel <= 1) {
+            return b.createClassOptions();
+        }
 
         Asker.msg("Jakou váhu chcete přiřadit tomuto předmětu?");
         b.setWeight(getNumber(def.weight));
 
-        if (detailLevel <= 2) { return b.createClassOptions(); }
+        if (detailLevel <= 2) {
+            return b.createClassOptions();
+        }
 
         Asker.msg("Kdy nejdříve můžete dělat zkoušku z tohoto předmětu??");
         b.setLowBound(getOptionalDate(def.lowBound));
@@ -134,8 +139,8 @@ public class InteractiveConfigurator {
                     "zadejte prosím cestu k platnému xlsx souboru",
                     ClassParser::parse,
                     configBuilder.classOptions.stream()
-                        .map(opt -> Map.entry(opt.classInfo, opt.examDates))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
+                            .map(opt -> Map.entry(opt.classInfo, opt.examDates))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
                     "použít data z původního souboru");
         } else {
             return Asker.ask("zadejte prosím cestu k platnému xlsx souboru", ClassParser::parse);
@@ -163,12 +168,16 @@ public class InteractiveConfigurator {
         Asker.msg("Kdy nejpozději můžete dělat zkoušku?");
         b.setHighBound(getOptionalDate(def.highBound));
 
-        if (detailLevel <= 1) { return b.createClassOptions(); }
+        if (detailLevel <= 1) {
+            return b.createClassOptions();
+        }
 
         Asker.msg("Jaká chcete aby byla výchozí váha předmětu?");
         b.setWeight(getNumber(def.weight));
 
-        if (detailLevel <= 2) { return b.createClassOptions(); }
+        if (detailLevel <= 2) {
+            return b.createClassOptions();
+        }
 
         Asker.msg("Kolik nejméně dní (obecně) potřebujete na přípravu? S tímto nastavením opatrně,",
                 "jedná se o pevnou hranici a mohlo by se tedy stát, že za daných podmínek nebude existovat řešení.");
@@ -228,7 +237,9 @@ public class InteractiveConfigurator {
             HashMap<ID, Integer> creditMap = CreditDownloader.getCredits(ids);
             builders.forEach(b -> {
                 ID id = b.classInfo.id;
-                if (creditMap.containsKey(id)) { b.setCredits(creditMap.get(id)); }
+                if (creditMap.containsKey(id)) {
+                    b.setCredits(creditMap.get(id));
+                }
             });
             Asker.msg("Hotovo");
         }
@@ -260,8 +271,12 @@ public class InteractiveConfigurator {
         statusDownloaded.addAll(statuses.keySet());
         builders.forEach(b -> {
             ID id = b.classInfo.id;
-            if (credits.containsKey(id)) { b.setCredits(credits.get(id)); }
-            if (statuses.containsKey(id)) { b.setStatus(statuses.get(id)); }
+            if (credits.containsKey(id)) {
+                b.setCredits(credits.get(id));
+            }
+            if (statuses.containsKey(id)) {
+                b.setStatus(statuses.get(id));
+            }
         });
     }
 

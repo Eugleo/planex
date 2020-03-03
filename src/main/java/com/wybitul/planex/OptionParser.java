@@ -36,11 +36,15 @@ public class OptionParser {
         Pattern nameP = Pattern.compile("^-\\s*([^:\\s]+)\\s*$");
         Matcher nameM = nameP.matcher(line);
 
-        if (!nameM.find()) { throw new IncorrectConfigFileException("Incorrectly specified flag"); }
+        if (!nameM.find()) {
+            throw new IncorrectConfigFileException("Incorrectly specified flag");
+        }
 
         String name = nameM.group(1);
 
-        if (!flagActions.containsKey(name)) { throw new IncorrectConfigFileException("Unknown flag"); }
+        if (!flagActions.containsKey(name)) {
+            throw new IncorrectConfigFileException("Unknown flag");
+        }
 
         try {
             flagActions.get(name).run();
@@ -53,17 +57,23 @@ public class OptionParser {
         Pattern nameP = Pattern.compile("^-\\s*([^:\\s]+):");
         Matcher nameM = nameP.matcher(line);
 
-        if (!nameM.find()) { throw new IncorrectConfigFileException("Incorrectly specified option name"); }
+        if (!nameM.find()) {
+            throw new IncorrectConfigFileException("Incorrectly specified option name");
+        }
 
         String name = nameM.group(1);
         Pattern valueP = Pattern.compile(":\\s*([^:]+)\\s*$");
         Matcher valueM = valueP.matcher(line);
 
-        if (!valueM.find()) { throw new IncorrectConfigFileException("Incorrectly specified option value"); }
+        if (!valueM.find()) {
+            throw new IncorrectConfigFileException("Incorrectly specified option value");
+        }
 
         String value = valueM.group(1);
 
-        if (!optConsumers.containsKey(name)) { throw new IncorrectConfigFileException("Unknown option"); }
+        if (!optConsumers.containsKey(name)) {
+            throw new IncorrectConfigFileException("Unknown option");
+        }
 
         try {
             optConsumers.get(name).accept(value);

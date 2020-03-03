@@ -16,7 +16,8 @@ Parses the configuration .plx file.
 public class ConfigParser {
     private static PeekScanner sc;
 
-    private ConfigParser() { }
+    private ConfigParser() {
+    }
 
     public static Optional<Config> parse(String path) {
         Config.Builder configBuilder = new Config.Builder();
@@ -33,7 +34,9 @@ public class ConfigParser {
                     Pattern p = Pattern.compile("^- rok:\\s*(\\d{4})");
                     Matcher m = p.matcher(line);
 
-                    if (!m.find()) { throw new IncorrectConfigFileException("Incorrect date specification"); }
+                    if (!m.find()) {
+                        throw new IncorrectConfigFileException("Incorrect date specification");
+                    }
 
                     defaultYear = Integer.parseInt(m.group(1));
                     configBuilder.defaultYear = defaultYear;
@@ -41,7 +44,9 @@ public class ConfigParser {
                     Pattern p = Pattern.compile("^- začátek:\\s*(.*)\\s*$");
                     Matcher m = p.matcher(line);
 
-                    if (!m.find()) { throw new IncorrectConfigFileException("Incorrect date format"); }
+                    if (!m.find()) {
+                        throw new IncorrectConfigFileException("Incorrect date format");
+                    }
 
                     LocalDate date = Utils.parseDate(m.group(1), defaultYear)
                             .orElseThrow(() -> new IncorrectConfigFileException("Incorrect date format"));
@@ -86,7 +91,9 @@ public class ConfigParser {
     private static ClassOptions parseClassOptions(ClassOptions.Builder b) throws IncorrectConfigFileException {
         while (sc.peekNextLine() != null && !sc.peekNextLine().startsWith("=")) {
             String line = sc.nextLine();
-            if (line.startsWith("-")) { b.parse(line); }
+            if (line.startsWith("-")) {
+                b.parse(line);
+            }
         }
         return b.createClassOptions();
     }

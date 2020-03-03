@@ -2,7 +2,9 @@ package com.wybitul.planex;
 
 @SuppressWarnings("SameParameterValue")
 class ModelException extends Exception {
-    ModelException(String message) { super(message); }
+    ModelException(String message) {
+        super(message);
+    }
 }
 
 class IncorrectConfigFileException extends Exception {

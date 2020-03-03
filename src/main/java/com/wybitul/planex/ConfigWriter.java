@@ -1,8 +1,13 @@
 package com.wybitul.planex;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,7 +20,8 @@ public class ConfigWriter {
     private static PrintStream out;
     private static int defaultYear;
 
-    private ConfigWriter() { }
+    private ConfigWriter() {
+    }
 
     public static boolean write(Config config, String path) {
         try (PrintStream ps = new PrintStream(new FileOutputStream(path))) {
@@ -74,7 +80,7 @@ public class ConfigWriter {
         newline();
         comment("St je funkce přiřazující číslo každému ze statusů (P/PVP/V)");
         comment("zadání: st(P), st(PVP), st(V)");
-        Stream<String> str = Arrays.stream(new int[] {cfg.st.p, cfg.st.pvp, cfg.st.v}).mapToObj(String::valueOf);
+        Stream<String> str = Arrays.stream(new int[]{cfg.st.p, cfg.st.pvp, cfg.st.v}).mapToObj(String::valueOf);
         writeOption("st", String.join(", ", str.collect(Collectors.toList())));
         newline();
     }
@@ -108,7 +114,9 @@ public class ConfigWriter {
         if (opts1.classInfo != null && opts1.classInfo.type == Type.COLLOQUIUM) {
             writeFlag("zápočet");
         }
-        if (opts1.ignore) { writeFlag("ignorovat"); }
+        if (opts1.ignore) {
+            writeFlag("ignorovat");
+        }
         newline();
     }
 

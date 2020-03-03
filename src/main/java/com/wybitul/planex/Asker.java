@@ -46,7 +46,9 @@ public class Asker {
                 false
         );
 
-        if (result.isEmpty()) { msg(String.format("(nastaveno: %s)", defString)); }
+        if (result.isEmpty()) {
+            msg(String.format("(nastaveno: %s)", defString));
+        }
         newline();
 
         return result.orElse(def);
@@ -71,13 +73,17 @@ public class Asker {
             try {
                 tInput = trans.apply(input);
                 test = pred.test(tInput);
-                if (!test) { msg(String.format("Nesprávný vstup, %s.", spec)); }
+                if (!test) {
+                    msg(String.format("Nesprávný vstup, %s.", spec));
+                }
             } catch (Exception e) {
                 msg(String.format("Nesprávný vstup, %s.", spec));
             }
         }
 
-        if (newline) { newline(); }
+        if (newline) {
+            newline();
+        }
         return tInput;
     }
 
@@ -85,7 +91,9 @@ public class Asker {
         System.out.println(String.join(" ", messages));
     }
 
-    static void newline() { msg(); }
+    static void newline() {
+        msg();
+    }
 
     static void section(String... messages) {
         String text = String.join(" ", messages);

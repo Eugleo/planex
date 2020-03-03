@@ -38,7 +38,7 @@ public class Model {
         IntVar zero = model.newConstant(0);
         IntVar one = model.newConstant(1);
 
-        for (ClassOptions classOpts: classOptions) {
+        for (ClassOptions classOpts : classOptions) {
             // Each interval denotes the learning/preparation period for an exam
             // i.e. the end of each interval has to be before some exam
             int[][] endDays = getEndDays(classOpts, beginning);
@@ -55,7 +55,7 @@ public class Model {
 
             // prepTime = duration - 1
             IntVar prepTime = model.newIntVar(0, dayCount, name + "prepTime");
-            model.addEquality(prepTime, LinearExpr.scalProd(new IntVar[] {duration, one}, new int[] {1, -1}));
+            model.addEquality(prepTime, LinearExpr.scalProd(new IntVar[]{duration, one}, new int[]{1, -1}));
 
             // prepTime >= minPrepTime
             IntVar minPrepTime = model.newConstant(classOpts.minPrepTime);
@@ -69,7 +69,7 @@ public class Model {
             model.addGreaterOrEqual(backupTries, classOpts.backupTries);
 
             try {
-                model.addAllowedAssignments(new IntVar[] {end, backupTries}, endDays);
+                model.addAllowedAssignments(new IntVar[]{end, backupTries}, endDays);
             } catch (CpModel.WrongLength wrongLength) {
                 System.out.println("Incorrect tuple length");
             }
@@ -77,12 +77,12 @@ public class Model {
             // prepTimeDiff = idealPrepTime - prepTime
             IntVar idealPrepTime = model.newConstant(classOpts.idealPrepTime);
             IntVar prepTimeDiff = model.newIntVar(-dayCount, classOpts.idealPrepTime, name + "prepDiff");
-            LinearExpr expr = LinearExpr.scalProd(new IntVar[] {idealPrepTime, prepTime}, new int[] {1, -1});
+            LinearExpr expr = LinearExpr.scalProd(new IntVar[]{idealPrepTime, prepTime}, new int[]{1, -1});
             model.addEquality(expr, prepTimeDiff);
 
             // prepTimeDiffPos = max(0, prepTimeDiff)
             IntVar prepTimeDiffPos = model.newIntVar(0, classOpts.idealPrepTime, name + "prepDiffPos");
-            model.addMaxEquality(prepTimeDiffPos, new IntVar[] {prepTimeDiff, zero});
+            model.addMaxEquality(prepTimeDiffPos, new IntVar[]{prepTimeDiff, zero});
 
             classModels.add(new ClassModel(classOpts, start, end, prepTime, backupTries));
 

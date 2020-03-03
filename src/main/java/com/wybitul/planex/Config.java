@@ -1,24 +1,25 @@
 package com.wybitul.planex;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /*
 Holds everything the model needs to do its job. Closely reflects the configuration file.
  */
 
 public class Config {
-    final LocalDate beginning;
-    final Set<ClassOptions> classOptions;
-    final WeightsConfig weightsConfig;
-    public final ClassOptions globalClassOptions;
-
     public static final WeightsConfig defaultWeightsConfig =
             new WeightsConfig(new StatusFunction(3, 2, 1), 1, 1, 1);
     public static final ClassOptions defaultClassOptions = new ClassOptions(
             null, Status.P, 0, 0, 3, 0, 0,
             false, Optional.empty(), Optional.empty(), new HashSet<>()
     );
+    public final ClassOptions globalClassOptions;
+    final LocalDate beginning;
+    final Set<ClassOptions> classOptions;
+    final WeightsConfig weightsConfig;
 
     public Config(LocalDate beginning, ClassOptions globalClassOptions,
                   Set<ClassOptions> classOptions, WeightsConfig weightsConfig) {
@@ -33,8 +34,8 @@ public class Config {
         LocalDate beginning;
         ClassOptions globalClassOptions;
         Set<ClassOptions> classOptions;
-        private WeightsConfig weightsConfig;
         int defaultYear;
+        private WeightsConfig weightsConfig;
 
         // ADAM jak zformátovat tyhle víceřádkové function cally?
         {

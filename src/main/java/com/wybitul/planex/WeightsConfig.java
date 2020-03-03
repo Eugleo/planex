@@ -72,8 +72,7 @@ public class WeightsConfig {
             return this;
         }
 
-        public WeightsConfig createWeightsConfig()
-        {
+        public WeightsConfig createWeightsConfig() {
             return new WeightsConfig(st, s, w, c);
         }
     }

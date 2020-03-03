@@ -5,7 +5,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
 
 /*
 Automatically downloads credits from SIS based on their class IDs.
@@ -13,11 +14,10 @@ This information is available in SIS even without any authentication.
  */
 
 public class CreditDownloader {
-    private static HashMap<ID, Integer> creditMap;
-
     private static final String pathToMap = "credits.map";
     private static final String pathToCredits = "#content table > tbody > tr > th:contains(E-kredity:) + td";
     private static final String sisURL = "https://is.cuni.cz/studium/predmety/index.php?do=predmet&kod=";
+    private static HashMap<ID, Integer> creditMap;
 
     // ADAM jak se zbavit warningu o unchecked castu?
     // Mám pocit, že mi to ukládání nějak nefunguje
@@ -30,7 +30,8 @@ public class CreditDownloader {
         }
     }
 
-    private CreditDownloader() { }
+    private CreditDownloader() {
+    }
 
     public static HashMap<ID, Integer> getCredits(Collection<ID> ids) {
         ids.stream()
@@ -45,8 +46,7 @@ public class CreditDownloader {
                         } else {
                             System.out.println("Unable to download credits for class " + id.str);
                         }
-                    }
-                    catch (NumberFormatException | IOException e) {
+                    } catch (NumberFormatException | IOException e) {
                         System.out.println("Unable to download credits for class " + id.str);
                     }
                 });
@@ -54,7 +54,8 @@ public class CreditDownloader {
         try (FileOutputStream fos = new FileOutputStream(pathToMap);
              ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(creditMap);
-        } catch (IOException ignored) { }
+        } catch (IOException ignored) {
+        }
 
         return creditMap;
     }

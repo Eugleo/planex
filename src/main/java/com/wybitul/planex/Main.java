@@ -1,6 +1,9 @@
 package com.wybitul.planex;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -76,7 +79,7 @@ public class Main {
                 Function.identity(),
                 (String p) ->
                         !p.isEmpty() &&
-                        !p.matches("^.*\\.[^/\\\\.]+$") &&
+                                !p.matches("^.*\\.[^/\\\\.]+$") &&
                                 ConfigWriter.write(cfg, p + ".plx")
         );
 
@@ -84,7 +87,9 @@ public class Main {
     }
 
     private static void printResults(Collection<Result> results) {
-        if (results.size() == 0) { return; }
+        if (results.size() == 0) {
+            return;
+        }
 
         List<Result> sorted = results.stream()
                 .sorted(Comparator.comparing(r -> r.examDate))

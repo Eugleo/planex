@@ -49,12 +49,12 @@ public class ClassOptions {
 
     static class Builder extends OptionParser {
         ClassInfo classInfo;
+        int credits;
+        int defaultYear;
         private Status status;
         private int idealPrepTime;
         private int minPrepTime;
         private int weight;
-        int credits;
-        int defaultYear;
         private int backupTries;
         private Optional<LocalDate> lowBound;
         private Optional<LocalDate> highBound;
@@ -68,7 +68,9 @@ public class ClassOptions {
                 Pattern generalP = Pattern.compile("^\\s*(.+)\\s*-\\s*(.+)\\s*$");
                 Matcher generalM = generalP.matcher(value);
 
-                if (!generalM.find()) { throw new IncorrectConfigFileException("Incorrect date range format"); }
+                if (!generalM.find()) {
+                    throw new IncorrectConfigFileException("Incorrect date range format");
+                }
 
                 setLowBound(Utils.parseDate(generalM.group(1), defaultYear));
                 setHighBound(Utils.parseDate(generalM.group(2), defaultYear));
@@ -77,7 +79,9 @@ public class ClassOptions {
             addOption("optimum", value -> {
                 Pattern p = Pattern.compile("^(\\d+)");
                 Matcher m = p.matcher(value);
-                if (!m.find()) { throw new IncorrectConfigFileException("Incorrect number format"); }
+                if (!m.find()) {
+                    throw new IncorrectConfigFileException("Incorrect number format");
+                }
                 idealPrepTime = Integer.parseInt(m.group(1));
             });
 
@@ -114,7 +118,9 @@ public class ClassOptions {
             addOption("minimum", value -> {
                 Pattern p = Pattern.compile("^(\\d+)");
                 Matcher m = p.matcher(value);
-                if (!m.find()) { throw new IncorrectConfigFileException("Incorrect number format"); }
+                if (!m.find()) {
+                    throw new IncorrectConfigFileException("Incorrect number format");
+                }
                 setMinPrepTime(Integer.parseInt(m.group(1)));
             });
 

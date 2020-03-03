@@ -10,7 +10,8 @@ Helper functions used all over the program.
  */
 
 public class Utils {
-    private Utils() { }
+    private Utils() {
+    }
 
     public static Optional<LocalDate> parseDate(String str, int defaultYear) {
         Pattern p = Pattern.compile("(\\d{1,2})\\.\\s*(\\d{1,2})\\.(?:\\s*(\\d{4}))?");

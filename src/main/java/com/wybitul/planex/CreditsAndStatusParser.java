@@ -19,15 +19,6 @@ The file needs to be downloaded manually from Subjects and schedule registration
 
 public class CreditsAndStatusParser {
     private Document doc;
-
-    public Map<ID, Integer> getCreditsMap() {
-        return creditsMap;
-    }
-
-    public Map<ID, Status> getStatusesMap() {
-        return statusesMap;
-    }
-
     private Map<ID, Integer> creditsMap;
     private Map<ID, Status> statusesMap;
 
@@ -43,6 +34,14 @@ public class CreditsAndStatusParser {
         } catch (IOException e) {
             return Optional.empty();
         }
+    }
+
+    public Map<ID, Integer> getCreditsMap() {
+        return creditsMap;
+    }
+
+    public Map<ID, Status> getStatusesMap() {
+        return statusesMap;
     }
 
     private Map<ID, Integer> parseCredits() {

@@ -20,7 +20,8 @@ public class ClassParser {
     private static final Pattern namePattern = Pattern.compile("^(.*) \\((.*)\\)$");
     private static final Pattern typePattern = Pattern.compile("^(zápočet/kolokvium|zkouška)$");
 
-    private ClassParser() { }
+    private ClassParser() {
+    }
 
     public static Optional<Map<ClassInfo, Set<LocalDate>>> parse(String path) {
         try {
@@ -35,7 +36,9 @@ public class ClassParser {
     }
 
     private static void parseRow(Row row) {
-        if (row.getRowNum() == 0) { return; }
+        if (row.getRowNum() == 0) {
+            return;
+        }
 
         DataFormatter formatter = new DataFormatter();
         String rawName = formatter.formatCellValue(row.getCell(4));

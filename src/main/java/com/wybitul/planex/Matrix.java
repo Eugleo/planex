@@ -62,7 +62,9 @@ public class Matrix<T> {
         return result;
     }
 
-    public List<List<T>> getColumns() { return columns; }
+    public List<List<T>> getColumns() {
+        return columns;
+    }
 
     public List<List<T>> getRows() {
         int cols = columns.size();
