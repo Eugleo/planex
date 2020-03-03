@@ -1,14 +1,16 @@
-package com.wybitul.planex;
+package com.wybitul.planex.solver;
+
+import com.wybitul.planex.config.ClassOptions;
 
 import java.time.LocalDate;
 
 public class Result {
-    final ClassOptions classOptions;
-    final LocalDate examDate;
-    final LocalDate start;
+    public final ClassOptions classOptions;
+    public final LocalDate examDate;
+    public final LocalDate start;
 
-    final int backupTries;
-    final int prepTime;
+    public final int backupTries;
+    public final int prepTime;
 
     public Result(ClassOptions classOptions, LocalDate examDate, LocalDate start, int backupTries, int prepTime) {
         this.classOptions = classOptions;

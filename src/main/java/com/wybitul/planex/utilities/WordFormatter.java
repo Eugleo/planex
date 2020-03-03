@@ -1,4 +1,4 @@
-package com.wybitul.planex;
+package com.wybitul.planex.utilities;
 
 /*
 Used to format numbers (e.g. 1 -> 1 den, 9 -> 9 dní)

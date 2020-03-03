@@ -1,9 +1,13 @@
-package com.wybitul.planex;
+package com.wybitul.planex.solver;
 
 import com.google.ortools.sat.CpModel;
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
 import com.google.ortools.sat.LinearExpr;
+import com.wybitul.planex.config.ClassOptions;
+import com.wybitul.planex.config.Config;
+import com.wybitul.planex.utilities.Matrix;
+import com.wybitul.planex.utilities.ModelException;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -21,7 +25,7 @@ public class Model {
 
     final LocalDate beginning;
 
-    Model(Config config) throws ModelException {
+    public Model(Config config) throws ModelException {
         this.beginning = config.beginning;
         List<ClassOptions> classOptions = config.classOptions.stream()
                 .filter(opt -> !opt.ignore)

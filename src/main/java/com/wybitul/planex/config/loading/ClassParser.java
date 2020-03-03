@@ -1,5 +1,9 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config.loading;
 
+import com.wybitul.planex.config.ClassInfo;
+import com.wybitul.planex.config.ID;
+import com.wybitul.planex.config.Type;
+import com.wybitul.planex.utilities.Functions;
 import org.apache.poi.ss.usermodel.*;
 
 import java.io.File;
@@ -60,7 +64,7 @@ public class ClassParser {
         var examDates = dates.getOrDefault(key, new HashSet<>());
         dates.putIfAbsent(key, examDates);
 
-        Utils.parseDate(rawDate, -1).ifPresentOrElse(
+        Functions.parseDate(rawDate, -1).ifPresentOrElse(
                 examDates::add,
                 () -> System.out.printf("Encountered a problem while reading row %d\n", row.getRowNum() + 1)
         );

@@ -1,4 +1,4 @@
-package com.wybitul.planex;
+package com.wybitul.planex.utilities;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -9,8 +9,8 @@ import java.util.regex.Pattern;
 Helper functions used all over the program.
  */
 
-public class Utils {
-    private Utils() {
+public class Functions {
+    private Functions() {
     }
 
     public static Optional<LocalDate> parseDate(String str, int defaultYear) {

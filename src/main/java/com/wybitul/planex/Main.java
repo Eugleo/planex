@@ -1,5 +1,14 @@
 package com.wybitul.planex;
 
+import com.wybitul.planex.config.Config;
+import com.wybitul.planex.config.ConfigWriter;
+import com.wybitul.planex.config.loading.ConfigParser;
+import com.wybitul.planex.config.loading.InteractiveConfigurator;
+import com.wybitul.planex.solver.Model;
+import com.wybitul.planex.solver.Result;
+import com.wybitul.planex.solver.Solver;
+import com.wybitul.planex.utilities.*;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -13,7 +22,6 @@ import java.util.stream.Stream;
 Open/Create/Edit a config file, run the model with the given config and print the results.
  */
 
-// ADAM Na jaké package bys to rozdělil?
 public class Main {
     static {
         System.loadLibrary("jniortools");
@@ -48,7 +56,7 @@ public class Main {
                 "v interaktivním konfigurátoru?");
         Boolean shouldEdit = Asker.ask(
                 "odpovězte prosím \"a\" nebo \"n\"",
-                Utils::parseBoolean,
+                Functions::parseBoolean,
                 false,
                 "neupravovat"
         );
@@ -102,10 +110,10 @@ public class Main {
                 sorted.stream().map(r -> r.classOptions.classInfo.name),
                 sorted.stream()
                         .map(r -> r.start)
-                        .map(d -> Utils.formatDate(d, -1)),
+                        .map(d -> Functions.formatDate(d, -1)),
                 sorted.stream()
                         .map(r -> r.examDate)
-                        .map(d -> Utils.formatDate(d, -1)),
+                        .map(d -> Functions.formatDate(d, -1)),
                 sorted.stream()
                         .map(r -> {
                             int dif = r.prepTime - r.classOptions.idealPrepTime;

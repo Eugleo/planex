@@ -1,4 +1,4 @@
-package com.wybitul.planex;
+package com.wybitul.planex.solver;
 
 import com.google.ortools.sat.CpSolver;
 import com.google.ortools.sat.CpSolverStatus;
@@ -15,11 +15,11 @@ Runs a model and creates Result object from the solution.
  */
 
 public class Solver {
-    final Model model;
-    final CpSolver solver = new CpSolver();
-    final LocalDate beginning;
+    public final Model model;
+    public final CpSolver solver = new CpSolver();
+    public final LocalDate beginning;
 
-    Solver(Model model) {
+    public Solver(Model model) {
         this.model = model;
         this.beginning = model.beginning;
     }

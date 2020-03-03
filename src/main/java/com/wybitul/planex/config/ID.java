@@ -1,9 +1,9 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config;
 
 import java.util.Objects;
 
 public class ID {
-    final String str;
+    public final String str;
 
     public ID(String str) {
         this.str = str;

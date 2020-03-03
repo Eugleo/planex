@@ -1,4 +1,8 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config;
+
+import com.wybitul.planex.config.loading.OptionParser;
+import com.wybitul.planex.utilities.Functions;
+import com.wybitul.planex.utilities.IncorrectConfigFileException;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -14,18 +18,18 @@ All information about a class. Mostly used in model building.
 
 @SuppressWarnings({"UnusedReturnValue", "OptionalUsedAsFieldOrParameterType"})
 public class ClassOptions {
-    final ClassInfo classInfo;
-    final Status status;
-    final int idealPrepTime;
-    final int minPrepTime;
-    final int weight;
-    final int credits;
-    final int backupTries;
-    final Optional<LocalDate> lowBound;
-    final Optional<LocalDate> highBound;
-    final Set<LocalDate> examDates;
+    public final ClassInfo classInfo;
+    public final Status status;
+    public final int idealPrepTime;
+    public final int minPrepTime;
+    public final int weight;
+    public final int credits;
+    public final int backupTries;
+    public final Optional<LocalDate> lowBound;
+    public final Optional<LocalDate> highBound;
+    public final Set<LocalDate> examDates;
 
-    final boolean ignore;
+    public final boolean ignore;
 
     ClassOptions(ClassInfo classInfo, Status status, int idealPrepTime, int minPrepTime, int weight, int credits,
                  int backupTries, boolean ignore, Optional<LocalDate> lowBound, Optional<LocalDate> highBound,
@@ -47,10 +51,10 @@ public class ClassOptions {
         return w.s * w.st.apply(status) + w.w * weight + w.c * credits;
     }
 
-    static class Builder extends OptionParser {
-        ClassInfo classInfo;
-        int credits;
-        int defaultYear;
+    public static class Builder extends OptionParser {
+        public ClassInfo classInfo;
+        public int credits;
+        public int defaultYear;
         private Status status;
         private int idealPrepTime;
         private int minPrepTime;
@@ -72,8 +76,8 @@ public class ClassOptions {
                     throw new IncorrectConfigFileException("Incorrect date range format");
                 }
 
-                setLowBound(Utils.parseDate(generalM.group(1), defaultYear));
-                setHighBound(Utils.parseDate(generalM.group(2), defaultYear));
+                setLowBound(Functions.parseDate(generalM.group(1), defaultYear));
+                setHighBound(Functions.parseDate(generalM.group(2), defaultYear));
             });
 
             addOption("optimum", value -> {
@@ -129,20 +133,20 @@ public class ClassOptions {
             addOption("termíny", value -> {
                 String[] dateStrings = value.split(",\\s*");
                 examDates = Arrays.stream(dateStrings)
-                        .map(str -> Utils.parseDate(str, defaultYear))
+                        .map(str -> Functions.parseDate(str, defaultYear))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .collect(Collectors.toSet());
             });
         }
 
-        Builder(ClassInfo classInfo, ClassOptions defaultClassOpts, int defaultYear) {
+        public Builder(ClassInfo classInfo, ClassOptions defaultClassOpts, int defaultYear) {
             cloneFields(defaultClassOpts);
             this.classInfo = classInfo;
             this.defaultYear = defaultYear;
         }
 
-        Builder(ClassOptions defaultClassOpts, int defaultYear) {
+        public Builder(ClassOptions defaultClassOpts, int defaultYear) {
             cloneFields(defaultClassOpts);
             this.defaultYear = defaultYear;
         }

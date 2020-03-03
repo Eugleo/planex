@@ -1,4 +1,8 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config;
+
+import com.wybitul.planex.config.loading.OptionParser;
+import com.wybitul.planex.utilities.Functions;
+import com.wybitul.planex.utilities.IncorrectConfigFileException;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -17,9 +21,9 @@ public class Config {
             false, Optional.empty(), Optional.empty(), new HashSet<>()
     );
     public final ClassOptions globalClassOptions;
-    final LocalDate beginning;
-    final Set<ClassOptions> classOptions;
-    final WeightsConfig weightsConfig;
+    public final LocalDate beginning;
+    public final Set<ClassOptions> classOptions;
+    public final WeightsConfig weightsConfig;
 
     public Config(LocalDate beginning, ClassOptions globalClassOptions,
                   Set<ClassOptions> classOptions, WeightsConfig weightsConfig) {
@@ -30,27 +34,26 @@ public class Config {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    static class Builder extends OptionParser {
-        LocalDate beginning;
-        ClassOptions globalClassOptions;
-        Set<ClassOptions> classOptions;
-        int defaultYear;
+    public static class Builder extends OptionParser {
+        public LocalDate beginning;
+        public ClassOptions globalClassOptions;
+        public Set<ClassOptions> classOptions;
+        public int defaultYear;
         private WeightsConfig weightsConfig;
 
-        // ADAM jak zformátovat tyhle víceřádkové function cally?
         {
             addOption("začátek", value ->
-                    setBeginning(Utils.parseDate(value, defaultYear)
+                    setBeginning(Functions.parseDate(value, defaultYear)
                             .orElseThrow(() -> new IncorrectConfigFileException("Incorrect date format"))));
         }
 
-        Builder() {
+        public Builder() {
             classOptions = new HashSet<>();
             globalClassOptions = Config.defaultClassOptions;
             weightsConfig = Config.defaultWeightsConfig;
         }
 
-        Builder(Config defaultConfig) {
+        public Builder(Config defaultConfig) {
             beginning = defaultConfig.beginning;
             globalClassOptions = defaultConfig.globalClassOptions;
             classOptions = defaultConfig.classOptions;

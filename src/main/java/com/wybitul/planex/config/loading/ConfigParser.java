@@ -1,4 +1,9 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config.loading;
+
+import com.wybitul.planex.config.*;
+import com.wybitul.planex.utilities.Functions;
+import com.wybitul.planex.utilities.IncorrectConfigFileException;
+import com.wybitul.planex.utilities.PeekScanner;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -48,7 +53,7 @@ public class ConfigParser {
                         throw new IncorrectConfigFileException("Incorrect date format");
                     }
 
-                    LocalDate date = Utils.parseDate(m.group(1), defaultYear)
+                    LocalDate date = Functions.parseDate(m.group(1), defaultYear)
                             .orElseThrow(() -> new IncorrectConfigFileException("Incorrect date format"));
                     configBuilder.setBeginning(date);
                 } else if (line.startsWith("-")) {

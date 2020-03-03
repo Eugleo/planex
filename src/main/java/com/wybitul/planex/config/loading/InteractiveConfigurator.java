@@ -1,4 +1,8 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config.loading;
+
+import com.wybitul.planex.config.*;
+import com.wybitul.planex.utilities.Asker;
+import com.wybitul.planex.utilities.Functions;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -121,7 +125,7 @@ public class InteractiveConfigurator {
         Asker.msg("Přejete si, aby model tento předmět ignoroval?");
         Boolean shouldIgnore = Asker.ask(
                 "odpovězte prosím \"a\" nebo \"n\"",
-                Utils::parseBoolean,
+                Functions::parseBoolean,
                 false,
                 "neignorovat"
         );
@@ -189,8 +193,8 @@ public class InteractiveConfigurator {
     private Optional<LocalDate> getOptionalDate(Optional<LocalDate> def) {
         return Asker.ask(
                 "zadejte datum ve formátu: den. měsíc. (popř. rok)",
-                s -> Utils.parseDate(s, defaultYear),
-                def.map(d -> Utils.formatDate(d, defaultYear)).orElse("bez omezení")
+                s -> Functions.parseDate(s, defaultYear),
+                def.map(d -> Functions.formatDate(d, defaultYear)).orElse("bez omezení")
         );
     }
 
@@ -224,7 +228,7 @@ public class InteractiveConfigurator {
 
         Boolean shouldDownload = Asker.ask(
                 "odpovězte prosím \"a\" nebo \"n\"",
-                Utils::parseBoolean
+                Functions::parseBoolean
         );
 
         // Set credits to be equal to the downloaded ones
@@ -283,17 +287,17 @@ public class InteractiveConfigurator {
     private LocalDate getDate() {
         return Asker.ask(
                 "zadejte datum ve formátu: den. měsíc. rok",
-                s -> Utils.parseDate(s, defaultYear)
+                s -> Functions.parseDate(s, defaultYear)
         );
     }
 
     private LocalDate getDate(LocalDate def) {
         return Asker.ask(
                 "zadejte datum ve formátu: den. měsíc. rok",
-                s -> Utils.parseDate(s, defaultYear),
+                s -> Functions.parseDate(s, defaultYear),
                 Optional::isPresent,
                 Optional.of(def),
-                Utils.formatDate(def, defaultYear)
+                Functions.formatDate(def, defaultYear)
         ).get();
     }
 

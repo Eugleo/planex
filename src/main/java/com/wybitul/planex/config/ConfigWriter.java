@@ -1,4 +1,7 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config;
+
+import com.wybitul.planex.utilities.Functions;
+import com.wybitul.planex.utilities.WordFormatter;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -39,7 +42,7 @@ public class ConfigWriter {
                     .orElse(-1);
 
             comment("Tento konfigurační soubor byl vytvořen " +
-                    Utils.formatDate(LocalDate.now(), -1));
+                    Functions.formatDate(LocalDate.now(), -1));
             newline();
 
             if (defaultYear != -1) {
@@ -48,7 +51,7 @@ public class ConfigWriter {
             }
             newline();
             comment("Datum začátku učení");
-            writeOption("začátek", Utils.formatDate(config.beginning, defaultYear));
+            writeOption("začátek", Functions.formatDate(config.beginning, defaultYear));
             newline();
             writeWeightsConfig(config.weightsConfig);
             out.println("+++");
@@ -92,12 +95,12 @@ public class ConfigWriter {
     private static void writeClassOptions(ClassOptions opts1, ClassOptions opts2, boolean isSpecificClass) {
         List<String> exams1 = opts1.examDates.stream()
                 .sorted(Comparator.naturalOrder())
-                .map(d -> Utils.formatDate(d, defaultYear))
+                .map(d -> Functions.formatDate(d, defaultYear))
                 .collect(Collectors.toList());
 
         List<String> exams2 = opts2.examDates.stream()
                 .sorted(Comparator.naturalOrder())
-                .map(d -> Utils.formatDate(d, defaultYear))
+                .map(d -> Functions.formatDate(d, defaultYear))
                 .collect(Collectors.toList());
 
         Map<String, Object> optionMap1 = getOptionMap(exams1, opts1);
@@ -130,8 +133,8 @@ public class ConfigWriter {
                 "optimum", days.format(opts.idealPrepTime),
                 "minimum", days.format(opts.minPrepTime),
                 "rozmezí", String.format("%s - %s",
-                        opts.lowBound.map(d -> Utils.formatDate(d, defaultYear)).orElse("x"),
-                        opts.highBound.map(d -> Utils.formatDate(d, defaultYear)).orElse("x")),
+                        opts.lowBound.map(d -> Functions.formatDate(d, defaultYear)).orElse("x"),
+                        opts.highBound.map(d -> Functions.formatDate(d, defaultYear)).orElse("x")),
                 "termíny", String.join(", ", exams)
         );
     }

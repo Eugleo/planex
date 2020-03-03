@@ -1,13 +1,14 @@
-package com.wybitul.planex;
+package com.wybitul.planex.solver;
 
 import com.google.ortools.sat.IntVar;
+import com.wybitul.planex.config.ClassOptions;
 
 public class ClassModel {
-    final ClassOptions classOptions;
-    final IntVar start;
-    final IntVar end;
-    final IntVar preparationTime;
-    final IntVar backupTries;
+    public final ClassOptions classOptions;
+    public final IntVar start;
+    public final IntVar end;
+    public final IntVar preparationTime;
+    public final IntVar backupTries;
 
     public ClassModel(ClassOptions classOptions, IntVar start, IntVar end, IntVar preparationTime, IntVar backupTries) {
         this.classOptions = classOptions;

@@ -1,4 +1,4 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config;
 
 public class StatusFunction {
     final int p;

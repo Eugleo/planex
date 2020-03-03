@@ -1,4 +1,4 @@
-package com.wybitul.planex;
+package com.wybitul.planex.utilities;
 
 import java.util.Optional;
 import java.util.Scanner;
@@ -15,30 +15,30 @@ public class Asker {
 
     // `ask` where the default value is Optional.empty()
     // i.e. the caller will know that the user selected a default value, although the def value is actually empty
-    static <T> Optional<T> ask(String spec, Function<String, Optional<T>> trans, String defString) {
+    public static <T> Optional<T> ask(String spec, Function<String, Optional<T>> trans, String defString) {
         return ask(spec, trans, Optional::isPresent, Optional.empty(), defString);
     }
 
     // `ask` with a default value, which has an automatically generated description
-    static <T> T ask(String spec, Function<String, T> trans, Predicate<T> pred, T def) {
+    public static <T> T ask(String spec, Function<String, T> trans, Predicate<T> pred, T def) {
         return ask(spec, trans, pred, def, String.valueOf(def));
     }
 
     // `ask` with the predicate automatically set to Optional::isPresent, because `trans` returns optional,
     // and a default value if the user enters ""
-    static <T> T ask(String spec, Function<String, Optional<T>> trans, T def, String defStr) {
+    public static <T> T ask(String spec, Function<String, Optional<T>> trans, T def, String defStr) {
         return ask(spec, trans, Optional::isPresent, Optional.of(def), defStr).get();
     }
 
     // `ask` with the predicate automatically set to Optional::isPresent, because `trans` returns optional
-    static <T> T ask(String spec, Function<String, Optional<T>> trans) {
+    public static <T> T ask(String spec, Function<String, Optional<T>> trans) {
         return ask(spec, trans, Optional::isPresent).get();
     }
 
     // `ask` with a default value if user enters ""
     // ADAM Jak správně formátovat víceřádkovou deklaraci?
-    static <T> T ask(String spec, Function<String, T> trans,
-                     Predicate<T> pred, T def, String defString) {
+    public static <T> T ask(String spec, Function<String, T> trans,
+                            Predicate<T> pred, T def, String defString) {
         Optional<T> result = ask(
                 String.format("%s, nebo pro zachování výchozí hodnoty (%s) nechte vstup prázdný", spec, defString),
                 s -> s.isEmpty() ? Optional.empty() : Optional.of(trans.apply(s)),
@@ -55,7 +55,7 @@ public class Asker {
     }
 
     // `ask` with newline after it
-    static <T> T ask(String spec, Function<String, T> trans, Predicate<T> pred) {
+    public static <T> T ask(String spec, Function<String, T> trans, Predicate<T> pred) {
         return ask(spec, trans, pred, true);
     }
 
@@ -87,22 +87,22 @@ public class Asker {
         return tInput;
     }
 
-    static void msg(String... messages) {
+    public static void msg(String... messages) {
         System.out.println(String.join(" ", messages));
     }
 
-    static void newline() {
+    public static void newline() {
         msg();
     }
 
-    static void section(String... messages) {
+    public static void section(String... messages) {
         String text = String.join(" ", messages);
         msg(text);
         msg("=".repeat(text.length()));
         newline();
     }
 
-    static void header(String... messages) {
+    public static void header(String... messages) {
         String text = String.join(" ", messages);
         msg(text);
         msg("-".repeat(text.length()));

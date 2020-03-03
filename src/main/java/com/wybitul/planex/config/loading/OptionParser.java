@@ -1,4 +1,7 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config.loading;
+
+import com.wybitul.planex.utilities.IncorrectConfigFileException;
+import com.wybitul.planex.utilities.ThrowingConsumer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,11 +18,11 @@ public class OptionParser {
     final Map<String, ThrowingConsumer<String>> optConsumers = new HashMap<>();
     final Map<String, Runnable> flagActions = new HashMap<>();
 
-    void addOption(String option, ThrowingConsumer<String> f) {
+    protected void addOption(String option, ThrowingConsumer<String> f) {
         optConsumers.put(option, f);
     }
 
-    void addFlag(String flag, Runnable f) {
+    protected void addFlag(String flag, Runnable f) {
         flagActions.put(flag, f);
         optConsumers.put(flag, s -> {
             switch (s.toLowerCase()) {

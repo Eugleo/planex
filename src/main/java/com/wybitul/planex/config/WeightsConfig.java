@@ -1,4 +1,6 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config;
+
+import com.wybitul.planex.config.loading.OptionParser;
 
 import java.util.Arrays;
 import java.util.List;
@@ -9,10 +11,10 @@ Holds the specification of weight parameters, which are used to compute class im
  */
 
 public class WeightsConfig {
-    final StatusFunction st;
-    final int s;
-    final int w;
-    final int c;
+    public final StatusFunction st;
+    public final int s;
+    public final int w;
+    public final int c;
 
     public WeightsConfig(StatusFunction st, int s, int w, int c) {
         this.st = st;
@@ -22,7 +24,7 @@ public class WeightsConfig {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    static class Builder extends OptionParser {
+    public static class Builder extends OptionParser {
         private StatusFunction st;
         private int s;
         private int w;
@@ -45,7 +47,7 @@ public class WeightsConfig {
             });
         }
 
-        Builder() {
+        public Builder() {
             this.st = Config.defaultWeightsConfig.st;
             this.s = Config.defaultWeightsConfig.s;
             this.w = Config.defaultWeightsConfig.w;

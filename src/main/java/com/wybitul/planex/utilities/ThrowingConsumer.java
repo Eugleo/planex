@@ -1,4 +1,4 @@
-package com.wybitul.planex;
+package com.wybitul.planex.utilities;
 
 @FunctionalInterface
 public interface ThrowingConsumer<T> {

@@ -1,19 +1,15 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config;
 
 import java.util.Objects;
-
-enum Type {
-    EXAM, COLLOQUIUM
-}
 
 /*
 Basic info about a class. You can discern one class (ClassOption) from another only by its ClassInfo.
  */
 
 public class ClassInfo {
-    final ID id;
-    final String name;
-    Type type;
+    public final ID id;
+    public final String name;
+    public Type type;
 
     public ClassInfo(ID id, String name, Type type) {
         this.id = id;

@@ -1,4 +1,4 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config;
 
 public enum Status {
     P, PVP, V;

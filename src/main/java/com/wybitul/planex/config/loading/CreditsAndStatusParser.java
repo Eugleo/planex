@@ -1,5 +1,7 @@
-package com.wybitul.planex;
+package com.wybitul.planex.config.loading;
 
+import com.wybitul.planex.config.ID;
+import com.wybitul.planex.config.Status;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;

@@ -1,4 +1,4 @@
-package com.wybitul.planex;
+package com.wybitul.planex.utilities;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
