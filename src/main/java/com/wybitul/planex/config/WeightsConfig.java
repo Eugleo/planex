@@ -23,15 +23,13 @@ public class WeightsConfig {
         this.c = c;
     }
 
-    @SuppressWarnings("UnusedReturnValue")
+    @SuppressWarnings({"UnusedReturnValue", "UnusedAssignment"})
     public static class Builder extends OptionParser {
         private StatusFunction st;
         private int s;
         private int w;
         private int c;
 
-        // ADAM opravdu nebudou {w, c, s, st} použity?
-        // Neměly by být nastaveny až poté, co se ta lambda zavolá? (i.e. po zavolání konstruktoru)
         {
             addOption("v", value -> w = Integer.parseInt(value));
 

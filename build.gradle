@@ -8,6 +8,7 @@ repositories {
 
 dependencies {
     implementation("org.apache.poi:poi:4.1.2") // xls reading
+    implementation("org.apache.poi:poi-ooxml:4.1.2") // xlsx reading
     implementation("org.jsoup:jsoup:1.13.1") // html parsing
     implementation(files("lib/local/com.google.ortools.jar")) // cp solver
     implementation("com.google.protobuf:protobuf-java:3.11.4") // ortools dependency

@@ -65,8 +65,6 @@ public class ClassOptions {
         private boolean ignore = false;
         private Set<LocalDate> examDates;
 
-        // ADAM Rád bych místo Stringů použil nějaký enum, kde by byly uloženy všechny možné optiony
-        // Jak na to?
         {
             addOption("rozmezí", value -> {
                 Pattern generalP = Pattern.compile("^\\s*(.+)\\s*-\\s*(.+)\\s*$");

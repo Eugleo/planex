@@ -1,9 +1,9 @@
 package com.wybitul.planex.utilities;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,22 +33,12 @@ public class Matrix<T> {
         IntStream.range(0, row.size()).forEach(i -> columns.get(i).add(index, rowList.get(i)));
     }
 
-    // ADAM Jde to nějak bez passování Class<T>?
-    public T[][] toArray(Class<T> tClass) {
-        int cols = columns.size();
-        int rows = cols > 0 ? columns.get(0).size() : 0;
-
-        @SuppressWarnings("unchecked")
-        T[][] result = (T[][]) Array.newInstance(tClass, rows, cols);
-        IntStream.range(0, rows).forEach(i ->
-                IntStream.range(0, cols).forEach(j ->
-                        result[i][j] = columns.get(j).get(i)
-                )
-        );
-        return result;
+    public T[][] toArray(IntFunction<T[]> generator, IntFunction<T[][]> generator2) {
+        return columns.stream()
+                .map(c -> c.toArray(generator))
+                .collect(Collectors.toList()).toArray(generator2);
     }
 
-    // ADAM Jde tohle nějak spojit s předchozí metodou?
     public int[][] toIntArray() {
         int cols = columns.size();
         int rows = cols > 0 ? columns.get(0).size() : 0;

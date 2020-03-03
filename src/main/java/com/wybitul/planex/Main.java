@@ -140,7 +140,7 @@ public class Main {
                 .map(c -> c.stream().map(o -> o.toString().length()).max(Comparator.naturalOrder()).orElse(0))
                 .collect(Collectors.toList());
 
-        Object[][] tableArray = table.toArray(Object.class);
+        Object[][] tableArray = table.toArray(Object[]::new, Object[][]::new);
 
         IntStream.range(0, table.getRows().size()).forEach(i -> {
             String formatBit;

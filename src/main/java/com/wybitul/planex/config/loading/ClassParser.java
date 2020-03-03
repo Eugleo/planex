@@ -35,6 +35,7 @@ public class ClassParser {
             return Optional.of(dates);
         } catch (IOException e) {
             System.out.printf("Can't open the file %s.\n", path);
+            System.out.println(e.getMessage());
         }
         return Optional.empty();
     }

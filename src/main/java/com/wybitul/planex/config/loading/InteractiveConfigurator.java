@@ -26,8 +26,6 @@ public class InteractiveConfigurator {
         this.configBuilder = builder;
     }
 
-    // ADAM Kdybych chtěl ty zprávy ve více jazycích, musel bych je mít uložené v nějakém objektu
-    // a používat je jako msg(o.welcome), msg(o.settings) atd, nebo je nějaký lepší způsob?
     public Config startConfiguration() {
         Asker.section("Úvodní nastavení");
 

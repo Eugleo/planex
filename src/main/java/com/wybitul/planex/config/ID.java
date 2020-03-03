@@ -1,8 +1,9 @@
 package com.wybitul.planex.config;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class ID {
+public class ID implements Serializable {
     public final String str;
 
     public ID(String str) {

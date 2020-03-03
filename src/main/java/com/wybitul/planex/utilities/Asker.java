@@ -35,10 +35,13 @@ public class Asker {
         return ask(spec, trans, Optional::isPresent).get();
     }
 
-    // `ask` with a default value if user enters ""
-    // ADAM Jak správně formátovat víceřádkovou deklaraci?
-    public static <T> T ask(String spec, Function<String, T> trans,
-                            Predicate<T> pred, T def, String defString) {
+    public static <T> T ask(
+            String spec,
+            Function<String, T> trans,
+            Predicate<T> pred,
+            T def,
+            String defString
+    ) {
         Optional<T> result = ask(
                 String.format("%s, nebo pro zachování výchozí hodnoty (%s) nechte vstup prázdný", spec, defString),
                 s -> s.isEmpty() ? Optional.empty() : Optional.of(trans.apply(s)),
